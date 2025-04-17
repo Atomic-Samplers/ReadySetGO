@@ -1,0 +1,1 @@
+from ase_data_processing import dict_to_chemical_symbols_list
