@@ -1,1 +1,1 @@
-from box import box
+from .box import box

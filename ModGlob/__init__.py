@@ -1,1 +1,1 @@
-from modglob import ModGlob
+from .modglob import ModGlob
