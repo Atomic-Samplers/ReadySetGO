@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class random():
+class Random():
     def __init__(self, atoms=None):
         self.atoms = atoms
     
@@ -19,7 +19,7 @@ class random():
         
         return position_array
     
-    def main(self):
+    def go_suggest(self):
         """
         Main function to run the random distribution of atoms.
         """
@@ -28,5 +28,7 @@ class random():
 
         # Step 2: Set positions in the atoms object
         self.atoms.set_positions(position_array)
+
+        self.atoms.info['go_method'] = 'random'
 
         return self.atoms

@@ -1,8 +1,8 @@
-from ase import Atoms
+from ase import Atoms, data
 import numpy as np
 from ..utils.ase_data_processing import dict_to_chemical_symbols_list
 
-class box():
+class Box():
     """ Distribute atoms randomly within a box of given dimensions """
     def __init__(self, unit_cell: np.ndarray = None, atoms_dict: dict = None, calculator = None):
         self.unit_cell = unit_cell
@@ -15,5 +15,7 @@ class box():
                      positions=np.zeros((sum(self.atoms_dict.values()), 3)),
                      calculator=self.calculator,
                      cell=self.unit_cell,
-                     pbc=True)
+                     pbc=True,
+                     info={'init_method': 'box',
+                           'calculator': self.calculator.name,}) # likely will be a problem as not all calcs have a name attribute replace with function instead
 

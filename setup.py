@@ -1,4 +1,3 @@
-from pickle import LONG
 from pydantic import VERSION
 from setuptools import setup, find_packages
 
@@ -8,7 +7,7 @@ LONG_DESCRIPTION = 'A modular global optimisation software for atomistic systems
 
 # Setting up
 setup(
-    name='ModGlob',
+    name='ReadySetGO',
     version=VERSION,
     author='Julian Holland',
     author_email='holland@fhi.mpg.de',
