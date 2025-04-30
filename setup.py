@@ -7,7 +7,7 @@ LONG_DESCRIPTION = 'A modular global optimisation software for atomistic systems
 
 # Setting up
 setup(
-    name='ReadySetGO',
+    name='readysetgo',
     version=VERSION,
     author='Julian Holland',
     author_email='holland@fhi.mpg.de',

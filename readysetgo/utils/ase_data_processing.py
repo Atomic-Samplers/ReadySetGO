@@ -18,14 +18,5 @@ def dict_to_chemical_symbols_list(atoms_dict: dict) -> list:
 
     return [atom_type for atom_type, count in atoms_dict.items() for _ in range(count)]
 
-def ase_db_count_structures(db_path: str, relaxed: bool =True) -> int:
 
-    db = connect(db_path)
-    if relaxed:
-        count=db.count(selection='relaxed=True')
-    else:
-        count=db.count()
-
-    return count
-    
     

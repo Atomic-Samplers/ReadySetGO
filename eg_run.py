@@ -1,16 +1,26 @@
-from ReadySetGO.readysetgo import ReadySetGO
+from readysetgo.readysetgo import ReadySetGO
 
 import numpy as np
 from ase.calculators.emt import EMT
 
 
-mg_object=ReadySetGO(iterations=1000,
-                     iniitailisation='box', 
-                     unit_cell=np.eye(3)*10,
-                     atoms_dict={'H': 2, 'O': 1},
-                     calculator=EMT(), 
-                     local_optimisation='asebfgs', 
-                     global_optimisation='random').main()
+mg_object=ReadySetGO(general_settings_dict={'iterations':50,
+                                            'close_contact_cutoff':0.5},
+                     initialization_type='box',
+                     initialization_settings_dict={'unit_cell':np.eye(3)*10,
+                                                   'free_atoms_dict':{'H': 2, 'O': 1},
+                                                   'calculator':EMT(), # ASE compatible calculator
+                                                   'pbc':True},
+                     database_type='asedb',
+                     database_settings_dict={'db_path':'rsgo.db'},
+                     local_optimization_type='asebfgs', 
+                     local_optimization_settings_dict={'directory': '.',
+                                                       'logfile':'rsgo_lo.log',
+                                                       'trajectory':'rsgo_lo.traj',
+                                                       'steps':500,
+                                                       'fmax':0.05},
+                     global_optimization_type='random',
+                     global_optimization_settings_dict={}).main()
 
 
 # print(a.positions)

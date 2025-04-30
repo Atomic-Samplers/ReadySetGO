@@ -1,9 +1,9 @@
 import numpy as np
+from .core import GlobalOptimizerCore
 
-
-class Random():
-    def __init__(self, atoms=None):
-        self.atoms = atoms
+class Random(GlobalOptimizerCore):
+    def __init__(self, base_atoms, db_path):
+        super().__init__(base_atoms, db_path)
     
     def random_position(self):
         """ Generate a random position within the box """
