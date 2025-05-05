@@ -2,8 +2,8 @@ import numpy as np
 from .core import GlobalOptimizerCore
 
 class Random(GlobalOptimizerCore):
-    def __init__(self, base_atoms, db_path):
-        super().__init__(base_atoms, db_path)
+    def __init__(self, base_atoms, atoms_list, iteration, close_contacts=False):
+        super().__init__(base_atoms, atoms_list, iteration, close_contacts)
     
     def random_position(self):
         """ Generate a random position within the box """

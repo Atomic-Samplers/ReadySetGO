@@ -1,2 +1,2 @@
 from .readysetgo import ReadySetGO
-from .setting_dicts import GORecipeDict
+from .module_manager import ModuleManager

@@ -7,8 +7,8 @@ from ..utils.common_functions import flatten_upper_triangle
 
 
 class ClaudeGO(GlobalOptimizerCore):
-    def __init__(self, base_atoms, db_path,  similarity=False, sim_list=[], close_contacts=False, lo=True, pbc=True):
-        super().__init__(base_atoms, db_path)
+    def __init__(self, base_atoms, iteration, db_path,  similarity=False, sim_list=[], close_contacts=False, lo=True, pbc=True):
+        super().__init__(base_atoms, db_path, iteration)
         self.similarity = similarity
         self.sim_list = sim_list
         self.close_contacts = close_contacts

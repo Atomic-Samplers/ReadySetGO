@@ -1,6 +1,6 @@
 from ase import Atoms, data
 import numpy as np
-from ..utils.ase_data_processing import dict_to_chemical_symbols_list
+from ..utils.common_functions import dict_to_chemical_symbols_list
 
 class Box():
     """ Distribute atoms randomly within a box of given dimensions """

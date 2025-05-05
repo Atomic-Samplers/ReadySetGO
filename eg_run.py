@@ -4,11 +4,11 @@ import numpy as np
 from ase.calculators.emt import EMT
 
 
-mg_object=ReadySetGO(general_settings_dict={'iterations':50,
+mg_object=ReadySetGO(general_settings_dict={'iterations':5,
                                             'close_contact_cutoff':0.5},
                      initialization_type='box',
                      initialization_settings_dict={'unit_cell':np.eye(3)*10,
-                                                   'free_atoms_dict':{'H': 2, 'O': 1},
+                                                   'free_atoms_dict':{'C': 10, 'O': 1},
                                                    'calculator':EMT(), # ASE compatible calculator
                                                    'pbc':True},
                      database_type='asedb',
