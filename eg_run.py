@@ -4,7 +4,7 @@ import numpy as np
 from ase.calculators.emt import EMT
 
 
-mg_object=ReadySetGO(general_settings_dict={'iterations':5,
+rsgo_object=ReadySetGO(general_settings_dict={'iterations':110,
                                             'close_contact_cutoff':0.5},
                      initialization_type='box',
                      initialization_settings_dict={'unit_cell':np.eye(3)*10,
@@ -20,7 +20,9 @@ mg_object=ReadySetGO(general_settings_dict={'iterations':5,
                                                        'steps':500,
                                                        'fmax':0.05},
                      global_optimization_type='random',
-                     global_optimization_settings_dict={}).main()
+                     global_optimization_settings_dict={})
+
+rsgo_object.main()
 
 
 # print(a.positions)

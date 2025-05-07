@@ -34,16 +34,15 @@ class AseDb():
 
         
     def update_atoms_in_db(self, lo_atoms, go_guess_atoms, iteration):
-        print(lo_atoms)
         lo_atoms.info['status'] = 'locally_optimized'
-        lo_atoms.info['go_guess_positions'] = [go_guess_atoms.positions, go_guess_atoms.get_chemical_symbols()]
+        # lo_atoms.arrays['go_guess_positions'] = 
         lo_atoms.info['id']=iteration
         db = connect(self.db_path)
-        
         db.update(id=iteration,
                      atoms=lo_atoms,
                      data=lo_atoms.info,
                      relaxed=lo_atoms.info['relaxed'],
+                     go_guess_positions=str(go_guess_atoms.positions)
                      )
         
     def db_to_atoms_list(self):
@@ -54,7 +53,9 @@ class AseDb():
         atoms_list = []
         
         for row in db.select(selection='relaxed=True'):
-            atoms_list.append(row.toatoms())
+            atoms=row.toatoms()
+            atoms.info=row.data
+            atoms_list.append(atoms)
         
         return atoms_list
     

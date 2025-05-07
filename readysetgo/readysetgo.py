@@ -1,8 +1,9 @@
-from .setting_dicts import *
 from .module_manager import *
 from .utils import *
+from .analysis import *
+from pathlib import Path
 from tqdm import tqdm
-
+from ase.io import write
 class ReadySetGO():
     def __init__(self, 
                  general_settings_dict={'close_contact_cutoff':0.5, # not sure where to put this setting, placing in general for now
@@ -24,7 +25,7 @@ class ReadySetGO():
                  global_descriptor_settings_dict={'atoms_list': [],
                                                   },
                  database_type='asedb',
-                 database_settings_dict={'db_path':Path('rsgo_structures.db'),},
+                 database_settings_dict={'db_path':Path('rsgo.db'),},
                  ):
         
         self.general_settings_dict=general_settings_dict
@@ -43,7 +44,7 @@ class ReadySetGO():
 
         
     
-    def main(self):
+    def main(self, live_tracking=True):
         """
         Main function to run the ReadySetGO algorithm.
         """
@@ -56,23 +57,22 @@ class ReadySetGO():
         self.global_optimization_settings_dict['base_atoms']=base_atoms_object
 
         # # initialize the database for all jobs
-        
         database_object=ModuleManager('database', self.database_type, self.database_settings_dict).get()
         database_object.initialize_atoms_db()
         structure_count=database_object.count_structures()
-        print(structure_count)
+        
+        atoms_list=database_object.db_to_atoms_list()
+
         if structure_count >= self.general_settings_dict['iterations']:
             print(f"Database already contains {structure_count} optimised structures.")
-            return
         
         else:
-            prog_bar = tqdm(total=self.general_settings_dict['iterations'], disable=False)
-            iteration=1
-            while iteration < self.general_settings_dict['iterations']:
-                # atoms_list = go_recipe_dict['database'].db_to_atoms_list()
-
-                # print(f"Working on structure: {structure_count+1}/{self.iterations}")
-                self.global_optimization_settings_dict['atoms_list']=database_object.db_to_atoms_list()
+            prog_bar = tqdm(total=self.general_settings_dict['iterations']-structure_count, disable=False)
+            
+            iteration=database_object.count_structures()+1
+            while iteration <= self.general_settings_dict['iterations']:
+                
+                self.global_optimization_settings_dict['atoms_list']=atoms_list
                 self.global_optimization_settings_dict['iteration']=iteration
                 go_object=ModuleManager('global_optimization', self.global_optimization_type, self.global_optimization_settings_dict).get()
                 
@@ -97,18 +97,33 @@ class ReadySetGO():
                 lo_object=ModuleManager('local_optimization', self.local_optimization_type, self.local_optimization_settings_dict).get()
                 
                 lo_atoms=lo_object.run()
-                
                 # write the atoms to the database
                 if lo_atoms.info['relaxed'] == True:
                     database_object.update_atoms_in_db(lo_atoms, go_suggested_atoms, iteration)
-                    iteration += 1
+                    iteration = database_object.count_structures()+1
                     prog_bar.update(1)
+                    
+                    if live_tracking:
+                        # atoms_list.append(lo_atoms)
+                        atoms_list=database_object.db_to_atoms_list()
+                        energy_distribution_profile(atoms_list)
+                    
                 else:
                     print(f"Local optimization failed for iteration {iteration}.")
 
-                
+            
+        #analysis eventually would like a more elegant function
+        
+        
+        
+        # will currently continue appending unecesarily, need to fix and move to own file
+        atoms_list=database_object.db_to_atoms_list()
+        energy_distribution_profile(atoms_list)
+        create_xyz_file(atoms_list)
+        
+        
  
-               
+            
                 
                 
         

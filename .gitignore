@@ -3,7 +3,5 @@ build
 dist
 eg_run.py
 eg_basin.py
-rsgo_structures.db
-rsgo_lo.log
-rsgo_lo.traj
+rsgo*
 **/__pycache__/
