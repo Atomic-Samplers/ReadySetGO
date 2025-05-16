@@ -4,4 +4,5 @@ dist
 eg_run.py
 eg_basin.py
 rsgo*
+rsgo.db
 **/__pycache__/

@@ -10,8 +10,13 @@ class ModuleManager():
 
     def get_class_name(self, mod):
         classes = inspect.getmembers(mod, inspect.isclass)
+        
+        def remove_underscore_lower(name):
+            return name.replace('_', '').lower()
+
         class_list =[cls for name, cls in classes if cls.__module__ == mod.__name__]
-        cls_list=[cls for cls in class_list if cls.__name__.lower()==self.module_name.lower()]
+        cls_list=[cls for cls in class_list if remove_underscore_lower(cls.__name__)==remove_underscore_lower(self.module_name)]
+
         if len(cls_list) == 0:
             return None
         else:
@@ -29,6 +34,7 @@ class ModuleManager():
         else:
             cls = getattr(mod, cls.__name__)
         
+        # print(cls, self.settings_dict)
         return cls(**self.settings_dict)
         
         # except (ImportError, AttributeError) as e:

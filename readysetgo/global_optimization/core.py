@@ -4,6 +4,7 @@
 
 from abc import ABC, abstractmethod
 from ase.db import connect
+from ase.atoms import Atoms
 
 class GlobalOptimizerCore(ABC):
     def __init__(self, base_atoms, atoms_list, iteration, close_contacts=False):
@@ -14,7 +15,7 @@ class GlobalOptimizerCore(ABC):
 
 
     @abstractmethod
-    def go_suggest(self, db, client):
+    def go_suggest(self) -> Atoms:
         """
         Abstract method to be implemented by subclasses.
         """

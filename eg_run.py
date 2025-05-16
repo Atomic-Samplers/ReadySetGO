@@ -1,10 +1,14 @@
+# from quansino.type_hints import Displacement
 from readysetgo.readysetgo import ReadySetGO
 
 import numpy as np
 from ase.calculators.emt import EMT
+# import quansino
+# from quansino.moves import DisplacementMove
+# from quansino.operations import Ball
 
 
-rsgo_object=ReadySetGO(general_settings_dict={'iterations':110,
+rsgo_object=ReadySetGO(general_settings_dict={'iterations':11,
                                             'close_contact_cutoff':0.5},
                      initialization_type='box',
                      initialization_settings_dict={'unit_cell':np.eye(3)*10,
@@ -19,8 +23,9 @@ rsgo_object=ReadySetGO(general_settings_dict={'iterations':110,
                                                        'trajectory':'rsgo_lo.traj',
                                                        'steps':500,
                                                        'fmax':0.05},
-                     global_optimization_type='random',
-                     global_optimization_settings_dict={})
+                     global_optimization_type='canonical_basin_hopping',
+                     global_optimization_settings_dict={'temperature':3001,
+                                                        })
 
 rsgo_object.main()
 

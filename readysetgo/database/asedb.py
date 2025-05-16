@@ -54,6 +54,7 @@ class AseDb():
         
         for row in db.select(selection='relaxed=True'):
             atoms=row.toatoms()
+            atoms.calc=self.base_atoms.calc
             atoms.info=row.data
             atoms_list.append(atoms)
         
