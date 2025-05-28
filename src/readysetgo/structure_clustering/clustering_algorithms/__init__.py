@@ -1,0 +1,3 @@
+from .classic_clustering_algorithm import ClassicClusteringAlgorithm
+from .dummy_clustering_algorithm import DummyClusteringAlgorithm
+from .hashing_clustering_algorithm import HashingClusteringAlgorithm

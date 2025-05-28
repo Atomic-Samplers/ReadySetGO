@@ -10,7 +10,7 @@ class ModuleManager():
 
     def get_class_name(self, mod):
         classes = inspect.getmembers(mod, inspect.isclass)
-        
+
         def remove_underscore_lower(name):
             return name.replace('_', '').lower()
 

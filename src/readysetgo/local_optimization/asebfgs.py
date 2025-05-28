@@ -7,11 +7,8 @@ class AseBfgs(LocalOptimizer):
     A wrapper for ASE's BFGS optimizer.
     """
 
-    def __init__(self, go_guess_atoms, iteration, directory='.', steps=500, fmax=0.05, logfile='rsgo_lo.log', trajectory='rsgo_lo.log'):
+    def __init__(self, go_guess_atoms=None, iteration=0, directory='.', steps=500, fmax=0.05, logfile='rsgo_lo.log', trajectory='rsgo_lo.log'):
         super().__init__(go_guess_atoms, iteration, directory, steps, fmax, logfile, trajectory)
-
-    def get_lo_directory(self):
-        return Path(self.directory, 'rsgo_results', 'calculation_output', f'rsgo_{self.atoms.get_chemical_formula()}_{self.atoms.info['init_method']}_{self.atoms.info['go_method']}_{str(self.iteration).zfill(7)}')
 
     def run(self):
         """

@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: ReadySetGO
+Version: 0.0.1
+Summary: A modular global optimisation software.
+Author-email: Julian Holland <holland@fhi.mpg.de>
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown

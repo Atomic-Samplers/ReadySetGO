@@ -1,0 +1,18 @@
+[project]
+name = "ReadySetGO"
+dynamic = ["version"]
+description = "A modular global optimisation software."
+authors = [
+    { name="Julian Holland", email="holland@fhi.mpg.de" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+
+[tool.setuptools]
+
+[tool.setuptools.dynamic]
+version = {attr = "readysetgo.__version__"}
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

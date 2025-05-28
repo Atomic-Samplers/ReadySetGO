@@ -9,7 +9,8 @@ from ase.calculators.emt import EMT
 
 
 rsgo_object=ReadySetGO(general_settings_dict={'iterations':11,
-                                            'close_contact_cutoff':0.5},
+                                            'close_contact_cutoff':0.5,
+                                            'verbose':1},
                      initialization_type='box',
                      initialization_settings_dict={'unit_cell':np.eye(3)*10,
                                                    'free_atoms_dict':{'C': 10, 'O': 1},

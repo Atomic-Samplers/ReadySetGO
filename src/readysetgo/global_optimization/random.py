@@ -30,5 +30,6 @@ class Random(GlobalOptimizerCore):
         self.atoms.set_positions(position_array)
 
         self.atoms.info['go_method'] = 'random'
+        self.add_info()
 
         return self.atoms
