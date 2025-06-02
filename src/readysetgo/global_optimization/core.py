@@ -8,7 +8,7 @@ import ase
 
 class GlobalOptimizerCore(ABC):
     def __init__(self, base_atoms: ase.Atoms = None, atoms_list : list = [], iteration : int = 0, close_contacts: bool = False):
-        self.atoms = base_atoms
+        self.base_atoms = base_atoms
         self.atoms_list = atoms_list
         self.iteration=iteration
         self.close_contacts=close_contacts
@@ -17,7 +17,7 @@ class GlobalOptimizerCore(ABC):
         """
         Adds information to the atoms object.
         """
-        self.atoms.info['id'] = self.iteration +1
+        self.base_atoms.info['id'] = self.iteration +1
     
     allowed_value_types ={'atoms_list': list, 'iteration' : int, 'close_contacts': bool}
     allowed_object_types = {'base_atoms': ['ase', 'Atoms']}

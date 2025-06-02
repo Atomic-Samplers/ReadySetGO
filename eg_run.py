@@ -3,10 +3,6 @@ from readysetgo.readysetgo import ReadySetGO
 
 import numpy as np
 from ase.calculators.emt import EMT
-# import quansino
-# from quansino.moves import DisplacementMove
-# from quansino.operations import Ball
-
 
 rsgo_object=ReadySetGO(general_settings_dict={'iterations':11,
                                             'close_contact_cutoff':0.5,

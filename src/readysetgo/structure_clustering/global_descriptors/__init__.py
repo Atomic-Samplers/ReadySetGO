@@ -1,2 +1,3 @@
+from readysetgo.structure_clustering.global_descriptors.core import GlobalDescriptorCore
 from .atomic_distances_descriptor import AtomicDistancesDescriptor
 from .inverse_atomic_distances_descriptor import InverseAtomicDistancesDescriptor

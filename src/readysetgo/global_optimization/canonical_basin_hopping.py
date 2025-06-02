@@ -15,16 +15,16 @@ class CanonicalBasinHopping(GlobalOptimizerCore):
     
     def go_suggest(self):
         if len(self.atoms_list) == 0:
-            return Random(base_atoms=self.atoms).go_suggest()
+            return Random(base_atoms=self.base_atoms).go_suggest()
         else:
             mc = Canonical(
                 atoms=self.atoms_list[-1],
                 temperature=self.temperature,
-                default_displacement_move=DisplacementMove(np.arange(len(self.atoms)), Ball(0.2)),)
+                default_displacement_move=DisplacementMove(np.arange(len(self.atoms_list[-1])), Ball(0.2)),)
 
             mc.run(1)
 
-            self.atoms.info['go_method'] = 'canonical_basin_hopping'
+            self.atoms_list[-1].info['go_method'] = 'canonical_basin_hopping'
             self.add_info()
             
         

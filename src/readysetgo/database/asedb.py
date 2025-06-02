@@ -7,11 +7,11 @@ class AseDb(DbBase):
                  db_path: str, 
                  iteration : int = None, 
                  base_atoms: ase.Atoms = None,
-                 go_guess_atoms: ase.Atoms = None,
+                 go_suggested_atoms: ase.Atoms = None,
                  lo_atoms: ase.Atoms = None,
                  iterations: int = 1000, 
                  ):
-        super().__init__(db_path, iteration, base_atoms, go_guess_atoms, lo_atoms, iterations)
+        super().__init__(db_path, iteration, base_atoms, go_suggested_atoms, lo_atoms, iterations)
         
     
     def count_structures(self) -> int:
@@ -43,17 +43,17 @@ class AseDb(DbBase):
         
     def update_atoms_in_db(self):
         """
-        Updates the database row with the locally optimised atoms and stores the go_guess_positions with some other metadata.
+        Updates the database row with the locally optimised atoms and stores the go_suggested_positions with some other metadata.
         """
-        self.lo_atoms.info['status'] = 'locally_optimized'
-        # lo_atoms.arrays['go_guess_positions'] = 
+        self.lo_atoms.info['status'] = 'locally_optimized' # move to lo
         self.lo_atoms.info['id']=self.iteration
+        
         db = connect(self.db_path)
         db.update(id=self.iteration,
                      atoms=self.lo_atoms,
                      data=self.lo_atoms.info,
                      relaxed=self.lo_atoms.info['relaxed'],
-                     go_guess_positions=str(self.go_guess_atoms.positions)
+                     go_suggested_positions=str(self.go_suggested_atoms.positions)
                      )
         
     def db_to_atoms_list(self) -> list:

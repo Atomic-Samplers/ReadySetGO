@@ -7,7 +7,7 @@ class DbBase(ABC):
                  db_path: str, 
                  iteration : int = None, 
                  base_atoms: ase.Atoms = None,
-                 go_guess_atoms: ase.Atoms = None,
+                 go_suggested_atoms: ase.Atoms = None,
                  lo_atoms: ase.Atoms = None,
                  iterations: int = 1000):
         
@@ -15,7 +15,7 @@ class DbBase(ABC):
         self.atoms = lo_atoms
         self.iteration = iteration
         self.base_atoms = base_atoms
-        self.go_guess_atoms = go_guess_atoms
+        self.go_suggested_atoms = go_suggested_atoms
         self.lo_atoms = lo_atoms
         self.iterations = iterations
     
@@ -36,7 +36,7 @@ class DbBase(ABC):
     @abstractmethod
     def update_atoms_in_db(self):
         """
-        Updates the database row with the locally optimised atoms and stores the go_guess_positions with some other metadata.
+        Updates the database row with the locally optimised atoms and stores the go_suggested_positions with some other metadata.
         """
         pass
     
@@ -56,7 +56,7 @@ class DbBase(ABC):
     
     # set a global, extensible dictionary for subcalasses to access
     allowed_value_types ={'db_path': str, 'iteration' : int, 'iterations': int}
-    allowed_object_types = {'base_atoms': ['ase', 'Atoms'], 'go_guess_atoms': ['ase', 'Atoms'], 'lo_atoms': ['ase', 'Atoms'] }
+    allowed_object_types = {'base_atoms': ['ase', 'Atoms'], 'go_suggested_atoms': ['ase', 'Atoms'], 'lo_atoms': ['ase', 'Atoms'] }
 
     def set_attribute(self, name, value):
         """Sets an attribute of the database object"""

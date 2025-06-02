@@ -1,3 +1,4 @@
+from readysetgo.structure_clustering.clustering_algorithms.core import ClusteringAlgorithm
 from .classic_clustering_algorithm import ClassicClusteringAlgorithm
 from .dummy_clustering_algorithm import DummyClusteringAlgorithm
 from .hashing_clustering_algorithm import HashingClusteringAlgorithm

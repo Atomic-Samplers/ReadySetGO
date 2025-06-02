@@ -1,12 +1,9 @@
-import glob
 import numpy as np
-from ...utils import *
-from abc import ABC, abstractmethod
 from .core import ClusteringAlgorithm
 
 class ClassicClusteringAlgorithm(ClusteringAlgorithm):
-    def __init__(self, atoms_list: list, dist_mat: np.ndarray, clustering_tolerance: float, verbose: int = 0, global_descriptor_object=None):
-        super().__init__(clustering_tolerance=clustering_tolerance, atoms_list=atoms_list, global_descriptor_object=global_descriptor_object, dist_mat=dist_mat, verbose=verbose)
+    def __init__(self, atoms_list: list, dist_mat: np.ndarray=np.array([]), clustering_tolerance: float = 0.01, iterations: int=1000, base_atoms=None, verbose: int = 0, global_descriptor_object=None):
+        super().__init__(clustering_tolerance=clustering_tolerance, atoms_list=atoms_list, global_descriptor_object=global_descriptor_object, dist_mat=dist_mat, base_atoms=base_atoms, iterations=iterations, verbose=verbose)
         
 
     def group(self) -> dict:

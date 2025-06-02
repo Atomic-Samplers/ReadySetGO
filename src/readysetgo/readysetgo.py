@@ -1,10 +1,13 @@
-from readysetgo.module_manager import *
-from readysetgo.utils import *
-from readysetgo.analysis import *
+from readysetgo.module_manager import ModuleManager
+from readysetgo.utils.intro import create_intro
+from readysetgo.utils.close_contacts import detect_close_contacts
+from readysetgo.analysis.energy_distribution_profile import energy_distribution_profile
+from readysetgo.analysis.create_xyz_file import create_xyz_file
+
 from readysetgo.structure_clustering.similarity_check import similarity_check
 from pathlib import Path
 from tqdm import tqdm
-from ase.io import write
+import numpy as np
 # import numpy as np
 class ReadySetGO():
     def __init__(self, 
@@ -64,14 +67,25 @@ class ReadySetGO():
 
         go_object.set_attribute('base_atoms', base_atoms_object)
         database_object.set_attribute('base_atoms', base_atoms_object)
+        clustering_object.set_attribute('base_atoms', base_atoms_object)
+        clustering_object.set_attribute('iterations', self.general_settings_dict['iterations'])
         clustering_object.set_attribute('global_descriptor_object', global_descriptor_object)
         
         database_object.initialize_atoms_db()
         structure_count=database_object.count_structures()
         
         atoms_list=database_object.db_to_atoms_list()
-        global_descriptor_list=clustering_object.get_pre_calculated_char_vecs()
-        distance_matrix=clustering_object.make_dist_mat(atoms_list, self.general_settings_dict['verbose'], normalise=True)
+        clustering_object.set_attribute('atoms_list', atoms_list)
+        
+        # global_descriptor_list=clustering_object.get_pre_calculated_char_vecs()
+
+        # distance_matrix=clustering_object.make_dist_mat(atoms_list, global_descriptor_list, normalise=True)
+
+        clustering_object.initialize_global_descriptor_array()
+        print(clustering_object.global_descriptor_array)
+        clustering_object.initialize_distance_matrix()
+        print(clustering_object.dist_mat)
+        # print('initialized dist mat:', distance_matrix)
         
         if structure_count >= self.general_settings_dict['iterations']:
             print(f"Database already contains {structure_count} optimised structures.")
@@ -83,29 +97,30 @@ class ReadySetGO():
             while iteration <= self.general_settings_dict['iterations']:
                 go_object.set_attribute('iteration',iteration)
                 go_object.set_attribute('atoms_list', atoms_list)
+                clustering_object.set_attribute('atoms_list', atoms_list)
 
                 # call the global optimization method to distribute the atoms in the box repeat if close contacts or similarity detected
                 similarity=True
                 while similarity:
                     close_contacts = True
-                    while close_contacts == True: 
+                    while close_contacts: 
                         go_suggested_atoms= go_object.go_suggest()
                         close_contacts=detect_close_contacts(go_suggested_atoms, self.general_settings_dict['close_contact_cutoff'])
                         go_object.set_attribute('close_contacts', close_contacts)
 
                     print('end of close contacts') # to delete
                     
-                    global_descriptor_object.set_attribute('structure', go_suggested_atoms)
-                    clustering_object.set_attribute('global_descriptor_object',global_descriptor_object)
+                    # global_descriptor_object.set_attribute('structure', go_suggested_atoms)
+                    # clustering_object.set_attribute('global_descriptor_object',global_descriptor_object)
                     
                     if len(atoms_list) > 1:
-                        similarity, distance_matrix, global_descriptor_list, group_dict=similarity_check(go_suggested_atoms, global_descriptor_list, distance_matrix, clustering_object, atoms_list, update=False)
+                        similarity, group_dict=similarity_check(clustering_object, update=False)
                     else:
                         similarity=False
                 
                 print('end of similarity check') # to delete
                 # perform the local optimization
-                lo_object.set_attribute('atoms',go_suggested_atoms)
+                lo_object.set_attribute('go_suggested_atoms',go_suggested_atoms)
                 lo_object.set_attribute('iteration',iteration)
                 lo_atoms=lo_object.run()
 
@@ -113,14 +128,19 @@ class ReadySetGO():
                 # update distance matrix and global descriptor list for clustering
                 if len(atoms_list) > 1:
                     global_descriptor_object.set_attribute('structure',lo_atoms)
-                    similarity, distance_matrix, global_descriptor_list, group_dict=similarity_check(go_suggested_atoms, global_descriptor_list, distance_matrix, clustering_object, atoms_list,update=True)
+                    clustering_object.set_attribute('global_descriptor_object',global_descriptor_object)
+                    similarity, group_dict=similarity_check(clustering_object, update=True)
 
                 # write the atoms to the database
-                if lo_atoms.info['relaxed'] == True:
-                    database_object.update_atoms_in_db(lo_atoms, go_suggested_atoms, iteration)
+                if lo_atoms.info['relaxed']:
+                    database_object.set_attribute('lo_atoms', lo_atoms)
+                    database_object.set_attribute('go_suggested_atoms', go_suggested_atoms)
+                    database_object.set_attribute('iteration', iteration)
+                    database_object.update_atoms_in_db()
+
                     iteration = database_object.count_structures()+1
-                    prog_bar.update(1)
                     atoms_list=database_object.db_to_atoms_list()
+                    prog_bar.update(1)
 
                     if live_tracking:
                         energy_distribution_profile(atoms_list)

@@ -14,6 +14,7 @@ class InverseAtomicDistancesDescriptor(GlobalDescriptorCore):
 
     def make_char_vec(self):
         """Returns the characteristic distance vector from a given ase atoms object"""
+        print('in the make_char_vec', self.structure)
         dist_mat = np.array(get_distances(self.structure.positions, cell=self.structure.cell, pbc=self.structure.pbc)[1])
         upper = np.triu(dist_mat)
         flat = upper.flatten()

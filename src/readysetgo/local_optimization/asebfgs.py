@@ -1,5 +1,4 @@
 from ase.optimize.bfgs import BFGS
-from ase.atoms import Atoms
 from .core import LocalOptimizer
 from pathlib import Path
 class AseBfgs(LocalOptimizer):
@@ -7,8 +6,8 @@ class AseBfgs(LocalOptimizer):
     A wrapper for ASE's BFGS optimizer.
     """
 
-    def __init__(self, go_guess_atoms=None, iteration=0, directory='.', steps=500, fmax=0.05, logfile='rsgo_lo.log', trajectory='rsgo_lo.log'):
-        super().__init__(go_guess_atoms, iteration, directory, steps, fmax, logfile, trajectory)
+    def __init__(self, go_suggested_atoms=None, iteration=0, directory='.', steps=500, fmax=0.05, logfile='rsgo_lo.log', trajectory='rsgo_lo.log'):
+        super().__init__(go_suggested_atoms, iteration, directory, steps, fmax, logfile, trajectory)
 
     def run(self):
         """
@@ -19,22 +18,22 @@ class AseBfgs(LocalOptimizer):
         steps : int, optional
             The number of optimization steps to perform.
         """
-        self.atoms.info['lo_method'] = 'asebfgs'
+        self.go_suggested_atoms.info['lo_method'] = 'asebfgs'
 
         # set the directory for the LO output to go
         lo_directory=self.get_lo_directory()
         Path(lo_directory).mkdir(parents=True, exist_ok=True)
-        self.atoms.calc.directory=lo_directory
+        self.go_suggested_atoms.calc.directory=lo_directory
 
-        optimizer = BFGS(self.atoms, logfile=str(Path(lo_directory, self.logfile)), trajectory=str(Path(lo_directory, self.trajectory)))  # Initialize the BFGS optimizer with the given atoms and arguments
+        optimizer = BFGS(self.go_suggested_atoms, logfile=str(Path(lo_directory, self.logfile)), trajectory=str(Path(lo_directory, self.trajectory)))  # Initialize the BFGS optimizer with the given atoms and arguments
         try:
             optimizer.run(fmax=self.fmax, steps=self.steps)  # Run the optimizer for the specified number of steps
             successful_lo=True
-        except:
+        except Exception:
             print("Local optimization failed.")
             successful_lo=False
         
-        self.atoms.info['relaxed'] = successful_lo
+        self.go_suggested_atoms.info['relaxed'] = successful_lo
         
-        return self.atoms
+        return self.go_suggested_atoms
         
