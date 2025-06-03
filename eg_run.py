@@ -4,7 +4,7 @@ from readysetgo.readysetgo import ReadySetGO
 import numpy as np
 from ase.calculators.emt import EMT
 
-rsgo_object=ReadySetGO(general_settings_dict={'iterations':1000,
+rsgo_object=ReadySetGO(general_settings_dict={'iterations':380,
                                             'close_contact_cutoff':0.5,
                                             'verbose':1},
                      initialization_type='box',
