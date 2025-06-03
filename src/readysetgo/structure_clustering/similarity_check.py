@@ -6,19 +6,16 @@ def similarity_check(clustering_object, update=True):
 
         take in  a new structure, compare it current systems 
         """
+        
 
-        if len(clustering_object.global_descriptor_array) == 0:
+        if np.all(clustering_object.global_descriptor_array == 0):
             clustering_object.initialize_global_descriptor_array()
             clustering_object.initialize_distance_matrix()
         
+        potential_entry= clustering_object.get_new_dist_mat_rows() 
 
-        # ptor=clustering_object.global_descriptor_object.make_char_vec()
-        potential_entry= clustering_object.get_new_dist_mat_rows() # why this mf empty?!!!
-        print('potential_enetry:', potential_entry)
-
-        if np.any(potential_entry <= 0.1):
+        if np.any(np.array(potential_entry) <= 0.01):
             similar = True
-            print("similarity detected")
         else:
             similar=False
 

@@ -18,10 +18,9 @@ class ClusteringAlgorithm(ABC):
     def atoms_list_to_global_descriptor_array(self) -> list:
         """Computes global descriptors for every structure in the atoms_list"""
         self.global_descriptor_object.set_attribute('structure', self.base_atoms)
-        print('gda init base atoms', self.global_descriptor_object.structure.positions, self.global_descriptor_object.make_char_vec())
+        
         self.global_descriptor_array= np.zeros((self.iterations, len(self.global_descriptor_object.make_char_vec())), dtype=float)
         
-        print('gda init', self.global_descriptor_array)
         for i in range(len(self.atoms_list)):
             self.global_descriptor_object.structure = self.atoms_list[i]
             self.global_descriptor_array[i]=(self.global_descriptor_object.make_char_vec())
@@ -31,6 +30,7 @@ class ClusteringAlgorithm(ABC):
 
         if len(self.atoms_list) <= self.iterations:
             self.atoms_list_to_global_descriptor_array()
+            print(f"Global descriptor array initialized with {len(self.global_descriptor_array)} entries.")
         else:
             raise ValueError(
                 f"Global descriptor array is larger than the number of iterations requested ({len(self.global_descriptor_array)} > {self.iterations}). Please increase the number of iterations."
@@ -38,7 +38,6 @@ class ClusteringAlgorithm(ABC):
     
     def get_distance_score(self, global_descriptor_length, entry_a, entry_b) -> float:
         """Calculates the distance score between two entries based on their global descriptors"""
-        print(entry_a, entry_b, global_descriptor_length)
         return np.sum(np.abs(entry_a - entry_b)) / global_descriptor_length
     
     def global_descriptor_array_to_distance_matrix(self):
@@ -73,8 +72,10 @@ class ClusteringAlgorithm(ABC):
     def set_new_global_descriptor(self, position: int = None):
         """ assign new global descriptor to the correct position in the global descriptor array"""
         if position is None:
-            position=len(self.global_descriptor_array)-1
+            position=len(self.atoms_list)
         self.global_descriptor_array[position]= self.global_descriptor_object.make_char_vec() # fix!
+        # print(f"New global descriptor set at position {position} in the global descriptor array.", 
+        #       f"Current non_zero array rows: {len(self.global_descriptor_array[np.all(self.global_descriptor_array !=0, axis=1)])}")
     
     def get_new_global_descriptor(self):
         """ return new global descriptor to the correct position in the global descriptor array"""
@@ -85,15 +86,14 @@ class ClusteringAlgorithm(ABC):
         
         new_structure_global_descriptor = self.get_new_global_descriptor()
         
-        return [self.get_distance_score(len(new_structure_global_descriptor), new_structure_global_descriptor, x) for x in self.global_descriptor_array if np.any(x != 0)]
-
+        return [self.get_distance_score(len(new_structure_global_descriptor), new_structure_global_descriptor, x) for x in self.global_descriptor_array if np.all(x != 0)]
+        
+        
     def set_dist_mat_with_new_entry(self, normalise=True):
         """Adds a new entry to the distance matrix"""
         
         new_entry= self.get_new_dist_mat_rows()
-
-        self.dist_mat[:len(self.global_descriptor_array), len(self.global_descriptor_array)-1] = self.dist_mat[len(self.global_descriptor_array)-1, :len(self.global_descriptor_array)]=new_entry
-
+        self.dist_mat[:len(new_entry), len(new_entry)-1] = self.dist_mat[len(new_entry)-1, :len(new_entry)]=new_entry
     # def normalise_dist_mat(self, invert=False):
     #     """Normalises the distance matrix"""
         

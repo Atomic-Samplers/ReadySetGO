@@ -4,11 +4,11 @@ from readysetgo.readysetgo import ReadySetGO
 import numpy as np
 from ase.calculators.emt import EMT
 
-rsgo_object=ReadySetGO(general_settings_dict={'iterations':11,
+rsgo_object=ReadySetGO(general_settings_dict={'iterations':1000,
                                             'close_contact_cutoff':0.5,
                                             'verbose':1},
                      initialization_type='box',
-                     initialization_settings_dict={'unit_cell':np.eye(3)*10,
+                     initialization_settings_dict={'unit_cell':np.eye(3)*5,
                                                    'free_atoms_dict':{'C': 10, 'O': 1},
                                                    'calculator':EMT(), # ASE compatible calculator
                                                    'pbc':True},

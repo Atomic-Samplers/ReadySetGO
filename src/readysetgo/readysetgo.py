@@ -108,17 +108,19 @@ class ReadySetGO():
                         close_contacts=detect_close_contacts(go_suggested_atoms, self.general_settings_dict['close_contact_cutoff'])
                         go_object.set_attribute('close_contacts', close_contacts)
 
-                    print('end of close contacts') # to delete
+                    # print('end of close contacts') # to delete
                     
                     # global_descriptor_object.set_attribute('structure', go_suggested_atoms)
                     # clustering_object.set_attribute('global_descriptor_object',global_descriptor_object)
                     
                     if len(atoms_list) > 1:
-                        similarity, group_dict=similarity_check(clustering_object, update=False)
+                        global_descriptor_object.set_attribute('structure',go_suggested_atoms)
+                        clustering_object.set_attribute('global_descriptor_object',global_descriptor_object)
+                        similarity=similarity_check(clustering_object, update=False)
                     else:
                         similarity=False
                 
-                print('end of similarity check') # to delete
+                # print('end of similarity check') # to delete
                 # perform the local optimization
                 lo_object.set_attribute('go_suggested_atoms',go_suggested_atoms)
                 lo_object.set_attribute('iteration',iteration)
@@ -129,7 +131,7 @@ class ReadySetGO():
                 if len(atoms_list) > 1:
                     global_descriptor_object.set_attribute('structure',lo_atoms)
                     clustering_object.set_attribute('global_descriptor_object',global_descriptor_object)
-                    similarity, group_dict=similarity_check(clustering_object, update=True)
+                    similarity=similarity_check(clustering_object, update=True)
 
                 # write the atoms to the database
                 if lo_atoms.info['relaxed']:

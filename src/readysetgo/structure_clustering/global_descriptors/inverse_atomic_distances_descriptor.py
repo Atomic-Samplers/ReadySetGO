@@ -12,13 +12,16 @@ class InverseAtomicDistancesDescriptor(GlobalDescriptorCore):
         super().__init__(structure, verbose)
         self.descriptor_name = "Inverse Atomic Distances"
 
+    def triag_number(self,n):
+        """Returns the number of elements in the upper triangular matrix"""
+        return n * (n - 1) // 2
+
     def make_char_vec(self):
         """Returns the characteristic distance vector from a given ase atoms object"""
-        print('in the make_char_vec', self.structure)
         dist_mat = np.array(get_distances(self.structure.positions, cell=self.structure.cell, pbc=self.structure.pbc)[1])
         upper = np.triu(dist_mat)
-        flat = upper.flatten()
-        no_zeroes = flat[flat != 0]
-        char_vec = np.sort(1 / no_zeroes)
+        flat = np.sort(upper.flatten())
+        filled_values= flat[(len(self.structure.positions)**2-self.triag_number(len(self.structure.positions))):]
+        char_vec = (1 / filled_values)
 
         return char_vec
