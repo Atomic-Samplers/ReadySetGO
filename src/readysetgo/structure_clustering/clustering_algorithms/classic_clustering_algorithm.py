@@ -27,20 +27,17 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
         file_num = len(self.atoms_list)
         
         atoms_array = self.atoms_list
-        print(atoms_array)
-        print(self.dist_mat)
+
         # Group structures based on the difference matrix
         group_dict = {}
         if len(self.atoms_list) > 1:
             while grouped_strucs < file_num:
                 # isolate group
                 in_group = self.dist_mat[0, :] < self.tolerance
-                print(in_group)
                 out_group = np.invert(in_group)
                 # group = atoms_array[in_group]
                 group = [i for i, keep in zip(atoms_array, in_group) if keep]
                 # get id and directories of group members and sort based on ids
-                print(group)
                 group_id_nums=[i.info['id'] for i in list(group)]
                 group_dict[min(group_id_nums)]=group_id_nums
 
@@ -56,9 +53,13 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
                         end="\r",
                     )
             else:
-                group_dict[self.atoms_list[0].info['id']]=self.atoms_list[0].info['id']
+                group_dict[self.atoms_list[0].info['id']]=[self.atoms_list[0].info['id']]
         
         if self.verbose > 0:
-            print(f'All structures grouped, Groups found: {len(group_dict)}, Largest Group: {max([len(x) for x in group_dict.values()])} ')
+            if len(group_dict) == 0:
+                print('No structures grouped, all structures are unique')
+            else:
+                largest_group = max([len(x) for x in group_dict.values()])
+                print(f'All structures grouped, Groups found: {len(group_dict)}, Largest Group: {largest_group} ')
         
         return group_dict

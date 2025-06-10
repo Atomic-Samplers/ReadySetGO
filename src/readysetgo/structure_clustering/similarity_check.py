@@ -7,14 +7,14 @@ def similarity_check(clustering_object, update=True):
         take in  a new structure, compare it current systems 
         """
         
-
+        
         if np.all(clustering_object.global_descriptor_array == 0):
             clustering_object.initialize_global_descriptor_array()
             clustering_object.initialize_distance_matrix()
         
         potential_entry= clustering_object.get_new_dist_mat_rows() 
 
-        if np.any(np.array(potential_entry) <= 0.01):
+        if np.any(np.array(potential_entry) <= 0.02):
             similar = True
         else:
             similar=False

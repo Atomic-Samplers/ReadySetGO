@@ -3,11 +3,13 @@ from readysetgo.utils.intro import create_intro
 from readysetgo.utils.close_contacts import detect_close_contacts
 from readysetgo.analysis.energy_distribution_profile import energy_distribution_profile
 from readysetgo.analysis.create_xyz_file import create_xyz_file
+from readysetgo.analysis.ules import ules_plot
 
 from readysetgo.structure_clustering.similarity_check import similarity_check
 from pathlib import Path
 from tqdm import tqdm
 import numpy as np
+import time
 # import numpy as np
 class ReadySetGO():
     def __init__(self, 
@@ -24,7 +26,7 @@ class ReadySetGO():
                  local_optimization_settings_dict={'logfile':'rsgo_lo.log',
                                                    'trajectory':'rsgo_lo.traj',},
                  clustering_algorithm_type='classic',
-                 clustering_algorithm_settings_dict={'clustering_tolerance':0.5,
+                 clustering_algorithm_settings_dict={'clustering_tolerance':0.01,
                                                      'atoms_list': [],
                                                      'dist_mat': None,},
                  global_descriptor_type='inverse_atomic_distances',
@@ -77,15 +79,9 @@ class ReadySetGO():
         atoms_list=database_object.db_to_atoms_list()
         clustering_object.set_attribute('atoms_list', atoms_list)
         
-        # global_descriptor_list=clustering_object.get_pre_calculated_char_vecs()
-
-        # distance_matrix=clustering_object.make_dist_mat(atoms_list, global_descriptor_list, normalise=True)
-
         clustering_object.initialize_global_descriptor_array()
-        print(clustering_object.global_descriptor_array)
         clustering_object.initialize_distance_matrix()
-        print(clustering_object.dist_mat)
-        # print('initialized dist mat:', distance_matrix)
+
         
         if structure_count >= self.general_settings_dict['iterations']:
             print(f"Database already contains {structure_count} optimised structures.")
@@ -107,33 +103,28 @@ class ReadySetGO():
                         go_suggested_atoms= go_object.go_suggest()
                         close_contacts=detect_close_contacts(go_suggested_atoms, self.general_settings_dict['close_contact_cutoff'])
                         go_object.set_attribute('close_contacts', close_contacts)
-
-                    # print('end of close contacts') # to delete
                     
-                    # global_descriptor_object.set_attribute('structure', go_suggested_atoms)
-                    # clustering_object.set_attribute('global_descriptor_object',global_descriptor_object)
-                    
-                    if len(atoms_list) > 1:
+                    if len(atoms_list) > 1 and self.clustering_algorithm_type != 'dummy':
                         global_descriptor_object.set_attribute('structure',go_suggested_atoms)
                         clustering_object.set_attribute('global_descriptor_object',global_descriptor_object)
                         similarity=similarity_check(clustering_object, update=False)
                     else:
                         similarity=False
                 
-                # print('end of similarity check') # to delete
                 # perform the local optimization
                 lo_object.set_attribute('go_suggested_atoms',go_suggested_atoms)
                 lo_object.set_attribute('iteration',iteration)
                 lo_atoms=lo_object.run()
-
+                
                 
                 # update distance matrix and global descriptor list for clustering
-                if len(atoms_list) > 1:
+                if len(atoms_list) > 1 and self.clustering_algorithm_type != 'dummy':
                     global_descriptor_object.set_attribute('structure',lo_atoms)
                     clustering_object.set_attribute('global_descriptor_object',global_descriptor_object)
                     similarity=similarity_check(clustering_object, update=True)
 
                 # write the atoms to the database
+
                 if lo_atoms.info['relaxed']:
                     database_object.set_attribute('lo_atoms', lo_atoms)
                     database_object.set_attribute('go_suggested_atoms', go_suggested_atoms)
@@ -141,22 +132,15 @@ class ReadySetGO():
                     database_object.update_atoms_in_db()
 
                     iteration = database_object.count_structures()+1
-                    atoms_list=database_object.db_to_atoms_list()
+                    atoms_list=database_object.db_to_atoms_list() # very slow
                     prog_bar.update(1)
-
+                    
                     if live_tracking:
                         energy_distribution_profile(atoms_list)
                     
-                else:
-                    print(f"Local optimization failed for iteration {iteration}.")
-
             
         #analysis eventually would like a more elegant function
-        
-        
-        
-        # will currently continue appending unecesarily, need to fix and move to own file
-        
+        # ules_plot(atoms_list, clustering_object=clustering_object, energy_range=0.025)
         energy_distribution_profile(atoms_list)
         create_xyz_file(atoms_list)
         

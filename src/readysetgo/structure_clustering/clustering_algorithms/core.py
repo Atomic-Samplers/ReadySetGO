@@ -74,9 +74,7 @@ class ClusteringAlgorithm(ABC):
         if position is None:
             position=len(self.atoms_list)
         self.global_descriptor_array[position]= self.global_descriptor_object.make_char_vec() # fix!
-        # print(f"New global descriptor set at position {position} in the global descriptor array.", 
-        #       f"Current non_zero array rows: {len(self.global_descriptor_array[np.all(self.global_descriptor_array !=0, axis=1)])}")
-    
+
     def get_new_global_descriptor(self):
         """ return new global descriptor to the correct position in the global descriptor array"""
         return self.global_descriptor_object.make_char_vec()
@@ -85,7 +83,6 @@ class ClusteringAlgorithm(ABC):
         """calculates the distance scores for the new structure against all existing structures"""
         
         new_structure_global_descriptor = self.get_new_global_descriptor()
-        
         return [self.get_distance_score(len(new_structure_global_descriptor), new_structure_global_descriptor, x) for x in self.global_descriptor_array if np.all(x != 0)]
         
         
@@ -101,34 +98,15 @@ class ClusteringAlgorithm(ABC):
         
     #     if invert:
     #         self.dist_mat = 1 - self.dist_mat
-    # def make_dist_mat(self, atoms_list, global_descriptor_list, normalise=True):
-    #     """Returns a distance matrix for the structures in the structure_row_list"""
-    #     if len(atoms_list) > 0:
-    #         # get the number of characterisitc elements for this structure
-    #         global_descriptor_length = len(self.global_descriptor_object.make_char_vec())
-    #         if self.verbose > 0:
-    #             print(
-    #                 "There are",
-    #                 global_descriptor_length,
-    #                 "characteristic elements for this structure",
-    #             )
 
-    #         for j in range(len(atoms_list)):
-    #             dist_mat = self.add_dist_mat_entry(new_structure_global_descriptor=global_descriptor_list[j],
-    #                                             dist_mat=self.dist_mat, 
-    #                                             global_descriptor_list=global_descriptor_list, 
-    #                                             global_descriptor_length=global_descriptor_length,
-    #                                             normalise=normalise
-    #                                             )
-    #     else:
-    #         dist_mat = np.zeros((0, 0))
-
-    #     return dist_mat
-
-    # set a global, extensible dictionary for subcalasses to access
     allowed_value_types ={'clustering_tolerance': float, 'atoms_list': list, 'dist_mat': np.ndarray , 'verbose': int, 'iterations': int}
     allowed_object_types = {'global_descriptor_object': ['readysetgo.structure_clustering.global_descriptors', 'GlobalDescriptorCore'],
                             'base_atoms': ['ase', 'Atoms']}
+
+    def get_dist_mat(self):
+        """Returns the distance matrix"""
+        return self.dist_mat
+    
 
     def set_attribute(self, name, value):
         """Sets an attribute of the clustering algorithm object"""
