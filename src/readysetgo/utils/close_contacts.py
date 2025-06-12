@@ -1,6 +1,6 @@
-from .common_functions import flatten_upper_triangle
+from readysetgo.utils.common_functions import flatten_upper_triangle
 
-def detect_close_contacts(atoms, cutoff)-> bool:
+def detect_close_contacts(atoms, cutoff: float)-> bool:
     """
     Detects close contacts between atoms in a given list based on a specified cutoff distance.
 
