@@ -2,6 +2,21 @@ import numpy as np
 import importlib
 
 def flatten_upper_triangle(matrix):
+    """
+    Return the non-zero elements of the triangle of a square matrix as a 1D array.
+
+    Parameters
+    ----------
+    matrix : np.ndarray
+        A square matrix from which to extract the upper triangle.
+    Returns
+    -------
+    np.ndarray
+        A 1D array containing the non-zero elements of the upper triangle of the matrix.
+
+    """
+    if matrix.shape[0] != matrix.shape[1]:
+        raise ValueError("Input must be a square matrix.")
     upper_triangle=np.triu(matrix)
     flat=upper_triangle.flatten()
     non_zero=flat[flat > 0]

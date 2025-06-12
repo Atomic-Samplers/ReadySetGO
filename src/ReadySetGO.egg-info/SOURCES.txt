@@ -1,3 +1,4 @@
+README.md
 pyproject.toml
 src/ReadySetGO.egg-info/PKG-INFO
 src/ReadySetGO.egg-info/SOURCES.txt
@@ -9,6 +10,8 @@ src/readysetgo/readysetgo.py
 src/readysetgo/analysis/__init__.py
 src/readysetgo/analysis/create_xyz_file.py
 src/readysetgo/analysis/energy_distribution_profile.py
+src/readysetgo/analysis/summary.py
+src/readysetgo/analysis/ules.py
 src/readysetgo/database/__init__.py
 src/readysetgo/database/ase_data_processing.py
 src/readysetgo/database/asedb.py
@@ -16,6 +19,7 @@ src/readysetgo/database/core.py
 src/readysetgo/global_optimization/__init__.py
 src/readysetgo/global_optimization/canonical_basin_hopping.py
 src/readysetgo/global_optimization/core.py
+src/readysetgo/global_optimization/force_bias_basin_hopping.py
 src/readysetgo/global_optimization/llm_claude.py
 src/readysetgo/global_optimization/random.py
 src/readysetgo/initialization/__init__.py

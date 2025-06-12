@@ -140,7 +140,7 @@ class ReadySetGO():
                     
             
         #analysis eventually would like a more elegant function
-        # ules_plot(atoms_list, clustering_object=clustering_object, energy_range=0.025)
+        ules_plot(atoms_list, clustering_object=clustering_object, energy_range=0.025)
         energy_distribution_profile(atoms_list)
         create_xyz_file(atoms_list)
         

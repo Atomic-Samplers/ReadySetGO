@@ -1,4 +1,6 @@
-import pkg_resources
+from importlib.metadata import version
+
+
 def create_intro():
     logo="""             XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX             
          XXXX                                                   XXXX         
@@ -20,11 +22,11 @@ X   X  X     XX      XX    XXX    XXX   XXX    XX    XX      XX      X  X   X
          XXXX                                                   XXXX         
              XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX             """
     authors="Dr. Julian Holland"
-    version=pkg_resources.get_distribution('readysetgo').version
+    rsgo_version=version('readysetgo')
     
     return f"""{logo}
 
 {authors}
 
-ReadySetGO version {version}
+ReadySetGO version {rsgo_version}
 """
