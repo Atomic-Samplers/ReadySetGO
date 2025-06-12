@@ -15,7 +15,9 @@ class ReadySetGO():
     def __init__(self, 
                  general_settings_dict={'close_contact_cutoff':0.5, # not sure where to put this setting, placing in general for now
                                         'iterations':1000,
-                                        'verbose':1},
+                                        'verbose':1,
+                                        'local_run':True,
+                                        },
                  initialization_type='box', 
                  initialization_settings_dict={'calculator': None, 
                                                'free_atoms_dict':None, 
@@ -82,12 +84,15 @@ class ReadySetGO():
         clustering_object.initialize_global_descriptor_array()
         clustering_object.initialize_distance_matrix()
 
+        header = f"| {'Structure ID':<12} | {'GO Algorithm':<24} | {'Energy':>12} | {'Time to Optimize':>17} | {'LO steps':>9} |"
+        separator = "-" * len(header)
+        print(header)
+        print(separator)
         
         if structure_count >= self.general_settings_dict['iterations']:
             print(f"Database already contains {structure_count} optimised structures.")
         
         else:
-            prog_bar = tqdm(total=self.general_settings_dict['iterations']-structure_count, disable=False)
             iteration=database_object.count_structures()+1
             
             while iteration <= self.general_settings_dict['iterations']:
@@ -96,6 +101,8 @@ class ReadySetGO():
                 clustering_object.set_attribute('atoms_list', atoms_list)
 
                 # call the global optimization method to distribute the atoms in the box repeat if close contacts or similarity detected
+                cc_count=0
+                sim_count=0
                 similarity=True
                 while similarity:
                     close_contacts = True
@@ -103,6 +110,7 @@ class ReadySetGO():
                         go_suggested_atoms= go_object.go_suggest()
                         close_contacts=detect_close_contacts(go_suggested_atoms, self.general_settings_dict['close_contact_cutoff'])
                         go_object.set_attribute('close_contacts', close_contacts)
+                        cc_count+=1
                     
                     if len(atoms_list) > 1 and self.clustering_algorithm_type != 'dummy':
                         global_descriptor_object.set_attribute('structure',go_suggested_atoms)
@@ -110,13 +118,19 @@ class ReadySetGO():
                         similarity=similarity_check(clustering_object, update=False)
                     else:
                         similarity=False
+                    sim_count+=1
+
+                if self.general_settings_dict['verbose'] > 0:
+                    print(f"Iteration {iteration}: Global optimization suggested atoms after {cc_count} close contact checks and {sim_count} similarity checks.", flush=True)
                 
                 # perform the local optimization
                 lo_object.set_attribute('go_suggested_atoms',go_suggested_atoms)
                 lo_object.set_attribute('iteration',iteration)
+                start_time = time.time()
                 lo_atoms=lo_object.run()
+                time_to_opt = time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time))
                 
-                
+                lo_steps = 10
                 # update distance matrix and global descriptor list for clustering
                 if len(atoms_list) > 1 and self.clustering_algorithm_type != 'dummy':
                     global_descriptor_object.set_attribute('structure',lo_atoms)
@@ -133,8 +147,10 @@ class ReadySetGO():
 
                     iteration = database_object.count_structures()+1
                     atoms_list=database_object.db_to_atoms_list() # very slow
-                    prog_bar.update(1)
-                    
+
+                    row = f"| {lo_atoms.info['id']:<12} | {self.global_optimization_type:<24} | {lo_atoms.get_potential_energy():>12.6f} | {time_to_opt:>17} | {lo_steps:>9} |"
+
+                    print(row)
                     if live_tracking:
                         energy_distribution_profile(atoms_list)
                     

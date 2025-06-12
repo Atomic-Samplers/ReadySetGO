@@ -17,7 +17,9 @@ class ClusteringAlgorithm(ABC):
 
     def atoms_list_to_global_descriptor_array(self) -> list:
         """Computes global descriptors for every structure in the atoms_list"""
-        self.global_descriptor_object.set_attribute('structure', self.base_atoms)
+        rattled_base_atoms=self.base_atoms.copy()
+        rattled_base_atoms.rattle()
+        self.global_descriptor_object.set_attribute('structure', rattled_base_atoms)
         
         self.global_descriptor_array= np.zeros((self.iterations, len(self.global_descriptor_object.make_char_vec())), dtype=float)
         
@@ -30,7 +32,8 @@ class ClusteringAlgorithm(ABC):
 
         if len(self.atoms_list) <= self.iterations:
             self.atoms_list_to_global_descriptor_array()
-            print(f"Global descriptor array initialized with {len(self.global_descriptor_array)} entries.")
+            if self.verbose > 0:
+                print(f"Global descriptor array initialized with {len(self.global_descriptor_array)} entries.")
         else:
             raise ValueError(
                 f"Global descriptor array is larger than the number of iterations requested ({len(self.global_descriptor_array)} > {self.iterations}). Please increase the number of iterations."

@@ -6,7 +6,8 @@ free_atoms_dict = {'C': 10, 'O': 1}  # Example free atoms dictionary
 
 rsgo_object=ReadySetGO(general_settings_dict={'iterations':110,
                                               'close_contact_cutoff':0.5,
-                                              'verbose':1},
+                                              'verbose':0,
+                                              'local_run':True}, # false if running on hpc
 					   # 1. Initialization
                        initialization_type='box',
                        initialization_settings_dict={'unit_cell': np.eye(3) * 5.0,
