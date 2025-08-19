@@ -71,10 +71,11 @@ class ReadySetGO():
 
         go_object.set_attribute('base_atoms', base_atoms_object)
         database_object.set_attribute('base_atoms', base_atoms_object)
+        database_object.set_attribute('iterations', self.general_settings_dict['iterations'])
         clustering_object.set_attribute('base_atoms', base_atoms_object)
         clustering_object.set_attribute('iterations', self.general_settings_dict['iterations'])
         clustering_object.set_attribute('global_descriptor_object', global_descriptor_object)
-        
+
         database_object.initialize_atoms_db()
         structure_count=database_object.count_structures()
         

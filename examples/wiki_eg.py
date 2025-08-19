@@ -4,7 +4,7 @@ from ase.calculators.emt import EMT
 
 free_atoms_dict = {'C': 10, 'O': 1}  # Example free atoms dictionary
 
-rsgo_object=ReadySetGO(general_settings_dict={'iterations':110,
+rsgo_object=ReadySetGO(general_settings_dict={'iterations':10,
                                               'close_contact_cutoff':0.5,
                                               'verbose':0,
                                               'local_run':True}, # false if running on hpc

@@ -40,7 +40,6 @@ class AseDb(DbBase):
                 for iteration in range(self.iterations-total_db_length):
                     db.write(self.base_atoms, relaxed=False, data=self.base_atoms.info)
 
-        
     def update_atoms_in_db(self):
         """
         Updates the database row with the locally optimised atoms and stores the go_suggested_positions with some other metadata.

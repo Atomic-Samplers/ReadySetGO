@@ -21,7 +21,7 @@ class CanonicalBasinHopping(GlobalOptimizerCore):
             mc = Canonical(
                 atoms=self.atoms_list[-1],
                 temperature=self.temperature,
-                default_displacement_move=DisplacementMove(np.arange(len(self.atoms_list[-1])), Ball(1)),)
+                default_displacement_move=DisplacementMove(np.arange(len(self.atoms_list[-1])), Ball(1)))
 
             mc.run(self.steps)
 

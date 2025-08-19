@@ -17,7 +17,7 @@ class LocalOptimizer(ABC):
         self.fmax=fmax
 
     def get_lo_directory(self):
-        return Path(self.directory, 'rsgo_results', 'calculation_output', f'rsgo_{self.go_suggested_atoms.get_chemical_formula()}_{self.go_suggested_atoms.info['init_method']}_{self.go_suggested_atoms.info['go_method']}_{str(self.iteration).zfill(7)}')
+        return Path(self.directory, 'rsgo_results', 'calculation_output', f"rsgo_{self.go_suggested_atoms.get_chemical_formula()}_{self.go_suggested_atoms.info['init_method']}_{self.go_suggested_atoms.info['go_method']}_{str(self.iteration).zfill(7)}")
     
     allowed_value_types ={ 'iteration' : int, 'directory': str, 'steps': int, 'fmax': float, 'logfile': str, 'trajectory': str }
     allowed_object_types = {'go_suggested_atoms': ['ase', 'Atoms']}
