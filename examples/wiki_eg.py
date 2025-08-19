@@ -1,24 +1,31 @@
 from readysetgo.readysetgo import ReadySetGO
 import numpy as np
-from ase.calculators.emt import EMT
+# from ase.calculators.emt import EMT
+from mace.calculators import MACECalculator
 
-free_atoms_dict = {'C': 10, 'O': 1}  # Example free atoms dictionary
+free_atoms_dict = {'C': 6, 'Na': 1}  # Example free atoms dictionary
 
-rsgo_object=ReadySetGO(general_settings_dict={'iterations':10,
+rsgo_object=ReadySetGO(general_settings_dict={'iterations':100,
                                               'close_contact_cutoff':0.5,
-                                              'verbose':0,
+                                              'verbose':1,
                                               'local_run':True}, # false if running on hpc
 					   # 1. Initialization
                        initialization_type='box',
                        initialization_settings_dict={'unit_cell': np.eye(3) * 5.0,
                                                      'free_atoms_dict':free_atoms_dict,
-                                                     'calculator':EMT(), # ASE compatible calculator
+                                                     'calculator': MACECalculator(
+                                                         model_paths='mace_C_Na_pgo_al_39_f3.model',
+                                                         device='cpu',
+                                                         default_dtype='float64'),
                                                      'pbc':True},
 
  					   # 2. Global Optimization Algorithm                        
+                        # global_optimization_type='random',
+                        # global_optimization_settings_dict={},
 					   global_optimization_type='canonical_basin_hopping',
-                       global_optimization_settings_dict={'temperature':600,
-                                                          'steps':1
+                       global_optimization_settings_dict={'temperature':1200,
+                                                          'steps': 100,
+                                                        #   'ball_displacement_radius':2.0
                                                           },
 
  					   # 3. Local Optimization Algorithm  
@@ -33,7 +40,8 @@ rsgo_object=ReadySetGO(general_settings_dict={'iterations':10,
                  	   global_descriptor_settings_dict={},
 
   					   # 5. Clustering Algorithm
-					   clustering_algorithm_type='classic',
+					#    clustering_algorithm_type='classic',
+                          clustering_algorithm_type='dummy',
 					   clustering_algorithm_settings_dict={'clustering_tolerance':0.01},
 
   					   # 6. Database   
