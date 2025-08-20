@@ -29,11 +29,13 @@ class ModuleManager():
         mod = importlib.import_module(f"readysetgo.{self.module_type}.{self.module_name}")
         # get the class name using a case insensitive match on the available classes in a module 
         cls=self.get_class_name(mod)
-        if cls==None:
+        if cls is None:
             print(f"Module '{self.module_name}' with class not found.")
         else:
             cls = getattr(mod, cls.__name__)
         
+        if self.settings_dict is None:
+            self.settings_dict = {}
         # print(cls, self.settings_dict)
         return cls(**self.settings_dict)
         

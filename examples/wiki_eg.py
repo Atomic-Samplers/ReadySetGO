@@ -40,8 +40,8 @@ rsgo_object=ReadySetGO(general_settings_dict={'iterations':100,
                  	   global_descriptor_settings_dict={},
 
   					   # 5. Clustering Algorithm
-					#    clustering_algorithm_type='classic',
-                          clustering_algorithm_type='dummy',
+					   clustering_algorithm_type='classic',
+                        #   clustering_algorithm_type='dummy',
 					   clustering_algorithm_settings_dict={'clustering_tolerance':0.01},
 
   					   # 6. Database   

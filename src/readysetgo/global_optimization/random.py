@@ -1,8 +1,9 @@
+from ase.atoms import Atoms
 import numpy as np
 from .core import GlobalOptimizerCore
 
 class Random(GlobalOptimizerCore):
-    def __init__(self, base_atoms, atoms_list=[], iteration=0, close_contacts=False):
+    def __init__(self, base_atoms: Atoms = None, atoms_list=[], iteration=0, close_contacts=False):
         super().__init__(base_atoms, atoms_list, iteration, close_contacts)
     
     def random_position(self):
