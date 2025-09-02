@@ -14,9 +14,8 @@ class HashingClusteringAlgorithm(ClusteringAlgorithm):
 
     def __init__(
         self,
-        clustering_tolerance: float,
+        tolerance: float,
         atoms_list: list,
-        dist_mat: np.ndarray = None,
         normalizations: int = 10,
         acceptance_rate: float = 0.5,
     ):
@@ -24,14 +23,20 @@ class HashingClusteringAlgorithm(ClusteringAlgorithm):
         Initialize the HashingClusteringAlgorithm.
 
         Parameters:
-        - n_clusters: Number of clusters to form.
-        - n_hashes: Number of hash functions to use.
+        - normalizations: Number of normalization steps to perform.
+        - acceptance_rate: Acceptable rate of hash collisions.
         """
-        super().__init__(clustering_tolerance, atoms_list, dist_mat)
+        super().__init__(tolerance, atoms_list)
         self.normalizations=normalizations
         self.acceptance_rate=acceptance_rate
+        
 
-    def get_hash_values(self, structure, max_gd_value):
+    def get_normalisation_array(self):
+        max_norm = 1 + self.tolerance * 0.5
+        min_norm = 1 - self.tolerance * 0.5
+        return np.linspace(min_norm, max_norm, self.normalizations)
+
+    def get_hash_values(self, structure):
         """
         Group the data using the hashing-based clustering algorithm.
         """
@@ -44,12 +49,12 @@ class HashingClusteringAlgorithm(ClusteringAlgorithm):
         #     return dist
 
         def normalize_global_descriptor(
-            descriptor, max_gd_value, normalized_to: float = 1.0
+            descriptor, normalized_to: float = 1.0
         ) -> np.ndarray:
             """
             Normalize the global descriptor to a fixed length.
             """
-            return descriptor * (normalized_to / max_gd_value)
+            return descriptor * (normalized_to)
 
         def round_global_descriptor(self, descriptor):
             """
@@ -63,16 +68,13 @@ class HashingClusteringAlgorithm(ClusteringAlgorithm):
             """
             return hash(descriptor.tobytes())
 
-        def get_normalisation_array(self):
-            max_norm = 1 + self.tolerance * 0.5
-            min_norm = 1 - self.tolerance * 0.5
-            return np.linspace(min_norm, max_norm, self.normalizations)
+
 
         descriptor = structure.info["global_descriptor"]
         hash_list = []
-        for n_to in get_normalisation_array(self):
+        for n_to in self.get_normalisation_array():
             normalized_descriptor = normalize_global_descriptor(
-                descriptor, max_gd_value, normalized_to=n_to
+                descriptor, normalized_to=n_to
             )
             rounded_descriptor = round_global_descriptor(self, normalized_descriptor)
             hashed_descriptor = hash_global_descriptor(rounded_descriptor)
@@ -80,16 +82,8 @@ class HashingClusteringAlgorithm(ClusteringAlgorithm):
 
         return hash_list
 
-    def make_gd_array(self):
-        a = np.zeros(
-            (len(self.atoms_list), len(self.atoms_list[0].info["global_descriptor"]))
-        )
-        for i, atoms in enumerate(self.atoms_list):
-            a[i] = atoms.info["global_descriptor"]
-        return a
-
-    def add_new_atoms(self, atoms, max_gd_value, nto_hash_dict):
-        hash_values = self.get_hash_values(atoms, max_gd_value)
+    def add_new_atoms(self, atoms, nto_hash_dict):
+        hash_values = self.get_hash_values(atoms)
         clashes = 0
         for nto, nto_hash in enumerate(hash_values):
             clashes += int(nto_hash in nto_hash_dict[nto])
@@ -99,35 +93,40 @@ class HashingClusteringAlgorithm(ClusteringAlgorithm):
         #     for nto, nto_hash in enumerate(hash_values):
 
     def create_hashing_dict(self):
-        max_gd_value = np.max(self.make_gd_array())
-
         hash_dict = {i: {} for i in range(self.normalizations)}
         for atoms in self.atoms_list:
-            atoms_hash_values = self.get_hash_values(atoms, max_gd_value)
+            atoms_hash_values = self.get_hash_values(atoms)
             for nto, hash_value in enumerate(atoms_hash_values):
                 hash_dict[nto][hash_value] = 0
 
         return hash_dict
 
     # def detect_clashes_new_structure(structure, nto_hash_dict):
+    def group(self):
+        hash_dict = {i: {} for i in range(self.normalizations)}
+        for atoms in self.atoms_list:
+            new_structure, hash_dict = self.add_new_atoms(atoms, hash_dict)
+        return hash_dict
+        
 
-    def group(self, nto_hash_dict):
-        nto_group_dict = {}
-        for n_to in nto_hash_dict:
-            hashed_gd_array = nto_hash_dict[n_to]
-            groups_data = np.unique(
-                hashed_gd_array, return_index=True, return_inverse=True
-            )
 
-            group_dict = {hash_index: [] for hash_index in np.unique(groups_data[2])}
+    # def group(self, nto_hash_dict):
+    #     nto_group_dict = {}
+    #     for n_to in nto_hash_dict:
+    #         hashed_gd_array = nto_hash_dict[n_to]
+    #         groups_data = np.unique(
+    #             hashed_gd_array, return_index=True, return_inverse=True
+    #         )
 
-            for i, hash_index in enumerate(groups_data[2]):
-                group_dict[hash_index].append(self.atoms_list[i].info["id"])
+    #         group_dict = {hash_index: [] for hash_index in np.unique(groups_data[2])}
 
-        # print(f"Number of groups for n_to={n_to}: {len(group_dict)}")
-        nto_group_dict[n_to] = group_dict
+    #         for i, hash_index in enumerate(groups_data[2]):
+    #             group_dict[hash_index].append(self.atoms_list[i].info["id"])
 
-        return nto_group_dict
+    #     # print(f"Number of groups for n_to={n_to}: {len(group_dict)}")
+    #     nto_group_dict[n_to] = group_dict
+
+    #     return nto_group_dict
         # for key in nto_group_dict:
         #     # print(f"Number of groups for n_to={key}: {len(nto_group_dict[key])}")
         #     for key2 in nto_group_dict[key]:

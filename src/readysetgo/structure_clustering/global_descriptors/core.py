@@ -14,7 +14,6 @@ class GlobalDescriptorCore(ABC):
     def print_out(self):
         """Prints out the details of the descriptor matrix creation"""
         print("Creating Descriptor Matrix")
-        print("Number of structures:", len(self.atoms_list))
         print("Verbose level:", self.verbose)
         print(f"Using {self.descriptor_name} as Descriptor")
 
