@@ -25,6 +25,9 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
             global_descriptor_array=global_descriptor_array,
         )
         self.dist_mat = dist_mat
+        
+    def __str__(self) -> str:
+        return "ClassicClusteringAlgorithm"
 
     def get_distance_score(self, global_descriptor_length, entry_a, entry_b) -> float:
         """Calculates the distance score between two entries based on their global descriptors"""
@@ -33,12 +36,11 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
 
     def global_descriptor_array_to_distance_matrix(self):
         """ Creates a distance matrix from the global descriptor array"""
-
-        self.dist_mat= np.zeros((self.iterations, self.iterations))
-        if self.global_descriptor_array is None:
+        if self.global_descriptor_array is None or len(self.global_descriptor_array) == 0:
             self.global_descriptor_array = self.make_gd_array()
 
         filled_global_descriptor_array_length=len(self.global_descriptor_array[np.any(self.global_descriptor_array!=0, axis=1)])
+        self.dist_mat= np.zeros((filled_global_descriptor_array_length, filled_global_descriptor_array_length))
         global_descriptor_length = len(self.global_descriptor_array[0])
 
         for i in range(filled_global_descriptor_array_length):
@@ -62,30 +64,24 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
                 f"Distance matrix is larger than the number of iterations ({len(self.dist_mat)} > {self.iterations}). Please increase the number of iterations."
             )
 
-    def get_new_dist_mat_rows(self) -> list:
+    def get_new_dist_mat_rows(self, atoms) -> list:
         """calculates the distance scores for the new structure against all existing structures"""
-        
-        new_structure_global_descriptor = self.get_new_global_descriptor()
+        assert "global_descriptor" in atoms.info, "Atoms object must have a global_descriptor attribute"
+        new_structure_global_descriptor = atoms.info["global_descriptor"]
         return [self.get_distance_score(len(new_structure_global_descriptor), new_structure_global_descriptor, x) for x in self.global_descriptor_array if np.all(x != 0)]
-        
-        
-    def set_dist_mat_with_new_entry(self, normalise=True):
+
+
+    def add_new_atoms(self, atoms):
         """Adds a new entry to the distance matrix"""
-        
-        new_entry= self.get_new_dist_mat_rows()
-        self.dist_mat[:len(new_entry), len(new_entry)-1] = self.dist_mat[len(new_entry)-1, :len(new_entry)]=new_entry
-    # def normalise_dist_mat(self, invert=False):
-    #     """Normalises the distance matrix"""
-        
-    #     self.dist_mat = self.dist_mat / np.max(self.dist_mat)
-        
-    #     if invert:
-    #         self.dist_mat = 1 - self.dist_mat
+
+        new_entry = self.get_new_dist_mat_rows(atoms)
+        self.dist_mat[:len(new_entry), len(new_entry) - 1] = self.dist_mat[len(new_entry) - 1, :len(new_entry)] = new_entry
 
     def get_dist_mat(self):
         """Returns the distance matrix"""
         return self.dist_mat
     
+
     def group(self) -> dict:
         """
         Returns a dictionary containing the results of grouping structures from a list of df row objects based on the geometry of the row's ase atoms object.
@@ -102,9 +98,9 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
         verbose : int
         the level to which the script will talk to you
         """
+        
         if len(self.dist_mat) == 0:
             self.global_descriptor_array_to_distance_matrix()
-
         file_num = len(self.atoms_list)
 
         # Group structures based on the difference matrix
@@ -115,7 +111,6 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
                 current_idx = remaining_indices[0]
                 distances = self.dist_mat[current_idx, remaining_indices]
                 in_group = distances < self.tolerance
-
                 group_indices = remaining_indices[in_group]
                 group_ids = [self.atoms_list[idx].info["id"] for idx in group_indices]
                 group_dict[min(group_ids)] = group_ids
@@ -126,30 +121,6 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
                     grouped_so_far = file_num - len(remaining_indices)
                     print(f"{grouped_so_far} / {file_num} Structures Grouped", end="\r")
                     
-            # while grouped_strucs < file_num:
-            #     # isolate group
-            #     in_group = grp_dist_mat[0, :] < self.tolerance
-            #     out_group = np.invert(in_group)
-            #     # group = atoms_array[in_group]
-            #     group = [i for i, keep in zip(atoms_array, in_group) if keep]
-            #     # get id and directories of group members and sort based on ids
-            #     group_id_nums = [i.info["id"] for i in list(group)]
-            #     group_dict[min(group_id_nums)] = group_id_nums
-
-            #     # update matrices and list to remove grouped structures
-            #     grouped_strucs += len(group)
-            #     atoms_array = [i for i, keep in zip(atoms_array, out_group) if keep]
-            #     grp_dist_mat = grp_dist_mat[out_group, :]
-            #     grp_dist_mat = grp_dist_mat[:, out_group]
-
-            #     if self.verbose > 0:
-            #         print(
-            #             str(grouped_strucs)
-            #             + " / "
-            #             + str(file_num)
-            #             + " Structures Grouped",
-            #             end="\r",
-            #         )
         else:
             group_dict[self.atoms_list[0].info["id"]] = [
                 self.atoms_list[0].info["id"]
