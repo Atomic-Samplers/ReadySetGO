@@ -1,9 +1,9 @@
 import numpy as np
 from ase.geometry import get_distances
-from .core import GlobalDescriptorCore
+from .core import GlobalDescriptor
 
 
-class InverseAtomicDistancesDescriptor(GlobalDescriptorCore):
+class InverseAtomicDistancesDescriptor(GlobalDescriptor):
     """
     Descriptor for inverse distance matrix. Exhibit slightly better seperation in some casese
     than the non-inverse. Credit to Maximillian Ach for the suggestion.

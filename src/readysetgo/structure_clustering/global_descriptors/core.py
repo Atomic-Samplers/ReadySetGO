@@ -2,7 +2,7 @@ from ...utils.common_functions import set_validated_attribute
 from abc import ABC, abstractmethod
 
 
-class GlobalDescriptorCore(ABC):
+class GlobalDescriptor(ABC):
     """Descriptor Matrix for structures."""
 
     def __init__(self, structure=None, verbose=0, descriptor_name=None):

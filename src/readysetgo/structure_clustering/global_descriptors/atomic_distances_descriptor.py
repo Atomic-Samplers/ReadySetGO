@@ -1,8 +1,8 @@
 import numpy as np
 from ase.geometry import get_distances
-from .core import GlobalDescriptorCore
+from .core import GlobalDescriptor
 
-class AtomicDistancesDescriptor(GlobalDescriptorCore):
+class AtomicDistancesDescriptor(GlobalDescriptor):
     """Descriptor for distance matrix."""
 
     def __init__(self, structure=None, verbose = 0):
