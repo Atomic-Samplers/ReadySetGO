@@ -31,4 +31,13 @@ class GlobalDescriptor(ABC):
         """Returns the characteristic vector from a given ase atoms object"""
         raise NotImplementedError("This method should be overridden by subclasses")
 
-   
+    @abstractmethod
+    def get_max_possible_distance(self):
+        """
+        Returns the maximum possible distance for the cell in periodic boundary conditions.
+
+        Note: This calculation assumes the cell is orthogonal (rectangular).
+        For non-orthogonal cells, this may not represent the true maximum possible distance.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses")
+        
