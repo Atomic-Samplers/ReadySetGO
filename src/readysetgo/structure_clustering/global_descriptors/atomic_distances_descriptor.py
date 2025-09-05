@@ -16,10 +16,12 @@ class AtomicDistancesDescriptor(GlobalDescriptor):
         Note: This calculation assumes the cell is orthogonal (rectangular).
         For non-orthogonal cells, this may not represent the true maximum possible distance.
         """
-        if self.structure.cell is not None:
+        if not np.any(self.structure.cell == 0):
             cell_lengths = np.diag(self.structure.cell)
             return np.linalg.norm(cell_lengths)
-        return 0
+        else:
+            return np.linalg.norm([np.max(self.structure.positions[:, i]) - np.min(self.structure.positions[:, i]) for i in range(3)]) * 1.5
+        
 
     def make_char_vec(self, max_distance=None):
         """Returns the characteristic distance vector from a given ase atoms object"""
