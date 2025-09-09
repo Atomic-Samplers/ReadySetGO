@@ -51,7 +51,9 @@ class ClassicClusteringAlgorithmC(ClusteringAlgorithm):
             global_descriptor_array=global_descriptor_array,
         )
         self.dist_mat = dist_mat
-
+    def __str__(self):
+        return "ClassicClusteringAlgorithmC"
+    
     def global_descriptor_array_to_distance_matrix(self):
         """ Creates a distance matrix from the global descriptor array using numba """
         if self.global_descriptor_array is None or len(self.global_descriptor_array) == 0:
