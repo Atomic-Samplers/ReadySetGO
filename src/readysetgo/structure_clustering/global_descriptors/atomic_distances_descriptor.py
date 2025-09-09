@@ -20,7 +20,7 @@ class AtomicDistancesDescriptor(GlobalDescriptor):
             cell_lengths = np.diag(self.structure.cell)
             return np.linalg.norm(cell_lengths)
         else:
-            return np.linalg.norm([np.max(self.structure.positions[:, i]) - np.min(self.structure.positions[:, i]) for i in range(3)]) * 1.5
+            return np.linalg.norm([np.max(self.structure.positions[:, i]) - np.min(self.structure.positions[:, i]) for i in range(3)])
         
 
     def make_char_vec(self, max_distance=None):
