@@ -7,7 +7,7 @@ from scipy.spatial.distance import euclidean
 class ClassicClusteringEuclideanAlgorithm(ClassicClusteringAlgorithm):
 
     def __str__(self) -> str:
-        return "ClassicClusteringEuclideanAlgorithm"
+        return f"ClassicClusteringEuclideanAlgorithm"
 
     def get_distance_score(self, global_descriptor_length, entry_a, entry_b) -> float:
         """Calculates the distance score between two entries based on their global descriptors"""

@@ -31,7 +31,7 @@ class HashingClusteringAlgorithm(ClusteringAlgorithm):
         self.acceptance_rate=acceptance_rate
         
     def __str__(self) -> str:
-        return f"HashingClusteringAlgorithm_N{self.normalizations}"
+        return f"HashingClusteringAlgorithm_N{self.normalizations}_AR{self.acceptance_rate}"
 
     def get_normalisation_array(self):
         max_norm = 1 + self.tolerance * 0.5

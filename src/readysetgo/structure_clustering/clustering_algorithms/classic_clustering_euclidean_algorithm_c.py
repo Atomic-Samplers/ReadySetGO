@@ -9,8 +9,10 @@ def compute_distance_matrix(global_descriptor_array):
     gd_length = global_descriptor_array.shape[1]
     for i in range(n):
         for j in range(i):
-            dist = np.sum(np.abs(global_descriptor_array[i] - global_descriptor_array[j])) / gd_length
+            diff = global_descriptor_array[i] - global_descriptor_array[j]
+            dist = np.sqrt(np.sum(diff * diff)) / np.sqrt(gd_length)
             dist_mat[i, j] = dist_mat[j, i] = dist
+
     return dist_mat
 
 @njit
@@ -29,7 +31,7 @@ def fast_group(dist_mat, tolerance):
         remaining_indices = remaining_indices[~in_group]
     return group_keys, group_ids_list
 
-class ClassicClusteringAlgorithmC(ClusteringAlgorithm):
+class ClassicClusteringEuclideanAlgorithmC(ClusteringAlgorithm):
     def __init__(
         self,
         atoms_list: list = [],
@@ -52,7 +54,7 @@ class ClassicClusteringAlgorithmC(ClusteringAlgorithm):
         )
         self.dist_mat = dist_mat
     def __str__(self):
-        return "ClassicClusteringAlgorithmC"
+        return "ClassicClusteringEuclideanAlgorithmC"
 
     def global_descriptor_array_to_distance_matrix(self):
         """ Creates a distance matrix from the global descriptor array using numba """
