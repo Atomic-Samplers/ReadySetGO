@@ -31,7 +31,7 @@ class HashingClusteringAlgorithm(ClusteringAlgorithm):
         self.acceptance_rate=acceptance_rate
         
     def __str__(self) -> str:
-        return f"HashingClusteringAlgorithm_N{self.normalizations}_AR{self.acceptance_rate}"
+        return f"HashingClusteringAlgorithm_N{self.normalizations}"
 
     def get_normalisation_array(self):
         max_norm = 1 + self.tolerance * 0.5
@@ -81,81 +81,41 @@ class HashingClusteringAlgorithm(ClusteringAlgorithm):
             rounded_descriptor = round_global_descriptor(self, normalized_descriptor)
             hashed_descriptor = hash_global_descriptor(rounded_descriptor)
             hash_list.append(hashed_descriptor)
+        
 
         return hash_list
 
     def add_new_atoms(self, atoms, nto_hash_dict):
         hash_values = self.get_hash_values(atoms)
+        nto_hash_dict, clashes =self.add_to_hashing_dict(atoms, nto_hash_dict, hash_values)
+        uniqueness_vote = 1 - (clashes / len(hash_values)) # 1 means completely unique, 0 means completely not unique
+        unique_structure = uniqueness_vote >= self.acceptance_rate
+
+        return unique_structure, uniqueness_vote, nto_hash_dict
+        #
+        #     for nto, nto_hash in enumerate(hash_values):
+    def add_to_hashing_dict(self, atoms, nto_hash_dict, hash_values):
         clashes = 0
         for nto, nto_hash in enumerate(hash_values):
-            clashes += int(nto_hash in nto_hash_dict[nto])
-            nto_hash_dict[nto][nto_hash] = 0
-        return clashes / len(hash_values) <= self.acceptance_rate, nto_hash_dict
-        # 
-        #     for nto, nto_hash in enumerate(hash_values):
+            if nto_hash in nto_hash_dict[nto]:
+                nto_hash_dict[nto][nto_hash].append(atoms.info["id"])
+                clashes += 1
+            else:
+                nto_hash_dict[nto][nto_hash] = [atoms.info["id"]]
+            
+        return nto_hash_dict, clashes
 
     def create_hashing_dict(self):
         hash_dict = {i: {} for i in range(self.normalizations)}
         for atoms in self.atoms_list:
             atoms_hash_values = self.get_hash_values(atoms)
-            for nto, hash_value in enumerate(atoms_hash_values):
-                hash_dict[nto][hash_value] = 0
-
+            hash_dict = self.add_to_hashing_dict(atoms, hash_dict, atoms_hash_values)
         return hash_dict
 
     # def detect_clashes_new_structure(structure, nto_hash_dict):
     def group(self):
         hash_dict = {i: {} for i in range(self.normalizations)}
         for atoms in self.atoms_list:
-            new_structure, hash_dict = self.add_new_atoms(atoms, hash_dict)
+            new_structure, uniqueness_vote, hash_dict = self.add_new_atoms(atoms, hash_dict)
         return hash_dict
         
-
-
-    # def group(self, nto_hash_dict):
-    #     nto_group_dict = {}
-    #     for n_to in nto_hash_dict:
-    #         hashed_gd_array = nto_hash_dict[n_to]
-    #         groups_data = np.unique(
-    #             hashed_gd_array, return_index=True, return_inverse=True
-    #         )
-
-    #         group_dict = {hash_index: [] for hash_index in np.unique(groups_data[2])}
-
-    #         for i, hash_index in enumerate(groups_data[2]):
-    #             group_dict[hash_index].append(self.atoms_list[i].info["id"])
-
-    #     # print(f"Number of groups for n_to={n_to}: {len(group_dict)}")
-    #     nto_group_dict[n_to] = group_dict
-
-    #     return nto_group_dict
-        # for key in nto_group_dict:
-        #     # print(f"Number of groups for n_to={key}: {len(nto_group_dict[key])}")
-        #     for key2 in nto_group_dict[key]:
-        # print(f"  Group {key2} length: {len(nto_group_dict[key][key2])}")
-
-
-# if __name__ == "__main__":
-# Example usage
-
-# base_atoms_array = [Atoms(molecule('H2O'), cell=np.eye(3)*5, pbc=True)]*3
-# atoms_array=[]
-
-# atoms_list = read("out/H2O_rattle_99.extxyz", ":")
-# i = 0
-# new_atoms_list = []
-# for atoms in atoms_list:
-#     new_atoms = atoms.copy()
-#     # new_atoms.rattle(0.01, rng=np.random)
-#     new_atoms.info["global_descriptor"] = AtomicDistancesDescriptor(
-#         new_atoms
-#     ).make_char_vec()
-#     new_atoms.info["id"] = i
-#     i += 1
-#     new_atoms_list.append(new_atoms)
-# HashingClusteringAlgorithm(
-#     clustering_tolerance=0.01, atoms_list=new_atoms_list
-# ).group()
-
-# result = clustering_algorithm.group()
-# print(result)  # Should print the grouped structures based on the hashing algorithm
