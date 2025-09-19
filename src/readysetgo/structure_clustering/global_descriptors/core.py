@@ -1,5 +1,6 @@
 from ...utils.common_functions import set_validated_attribute
 from abc import ABC, abstractmethod
+import numpy as np
 
 
 class GlobalDescriptor(ABC):
@@ -25,12 +26,14 @@ class GlobalDescriptor(ABC):
         """Sets an attribute of the global descriptor object"""
         set_validated_attribute(self, name, value, self.__class__.allowed_value_types, self.__class__.allowed_object_types)
         
-
     @abstractmethod
-    def make_char_vec(self):
-        """Returns the characteristic vector from a given ase atoms object"""
+    def make_char_vec(self, max_distance: float) -> np.ndarray:
+        """Returns the characteristic vector from a given ase atoms object
+         Args:
+            max_distance (float): The maximum possible distance for the cell/structure.
+        """
         raise NotImplementedError("This method should be overridden by subclasses")
-
+    
     @abstractmethod
     def get_max_possible_distance(self):
         """

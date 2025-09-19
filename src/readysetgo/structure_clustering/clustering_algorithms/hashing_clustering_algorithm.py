@@ -101,14 +101,17 @@ class HashingClusteringAlgorithm(ClusteringAlgorithm):
         hash_dict = {i: {} for i in range(self.normalizations)}
         for atoms in self.atoms_list:
             atoms_hash_values = self.get_hash_values(atoms)
-            hash_dict = self.add_to_hashing_dict(atoms, hash_dict, atoms_hash_values)
+            hash_dict, clashes = self.add_to_hashing_dict(atoms, hash_dict, atoms_hash_values)
         return hash_dict
 
     # def detect_clashes_new_structure(structure, nto_hash_dict):
     def group(self):
         hash_dict = {i: {} for i in range(self.normalizations)}
+        new_structures=0
         for atoms in self.atoms_list:
             new_structure, uniqueness_vote, hash_dict = self.add_new_atoms(
                 atoms, hash_dict
             )
+            new_structures += int(new_structure)
+
         return hash_dict
