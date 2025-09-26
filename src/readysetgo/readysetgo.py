@@ -37,7 +37,7 @@ class ReadySetGO:
         },
         clustering_algorithm_type="classic",
         clustering_algorithm_settings_dict={
-            "clustering_tolerance": 0.01,
+            "tolerance": 0.01,
             "atoms_list": [],
             "dist_mat": None,
         },

@@ -73,7 +73,7 @@ class ClusteringAlgorithm(ABC):
     allowed_object_types = {
         "global_descriptor_object": [
             "readysetgo.structure_clustering.global_descriptors",
-            "GlobalDescriptorCore",
+            "GlobalDescriptor",
         ],
         "base_atoms": ["ase", "Atoms"],
     }

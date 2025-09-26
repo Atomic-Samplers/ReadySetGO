@@ -1,6 +1,6 @@
 import numpy as np
 from ase.geometry import get_distances
-from .core import GlobalDescriptor
+from readysetgo.structure_clustering.global_descriptors.core import GlobalDescriptor
 
 class AtomicDistancesDescriptor(GlobalDescriptor):
     """Descriptor for distance matrix."""
