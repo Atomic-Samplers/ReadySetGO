@@ -111,5 +111,5 @@ class ClusteringAlgorithm(ABC):
         pass
 
     @abstractmethod
-    def group(self, data):
+    def group(self):
         raise NotImplementedError("Subclasses should implement this method")

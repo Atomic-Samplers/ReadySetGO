@@ -7,4 +7,4 @@ class HashingClusteringGaussAlgorithm(HashingClusteringAlgorithm):
         return f"HashingClusteringGaussAlgorithm_N{self.normalizations}"
     def get_normalisation_array(self):
         np.random.seed(803)
-        return np.random.normal(1, self.tolerance, size=self.normalizations)
+        return np.random.normal(1, self.tolerance**2, size=self.normalizations)
