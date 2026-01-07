@@ -61,6 +61,7 @@ class ClassicClusteringAlgorithmC(ClusteringAlgorithm):
         filled_gd_array = self.global_descriptor_array[np.any(self.global_descriptor_array != 0, axis=1)]
         self.dist_mat = compute_distance_matrix(filled_gd_array)
 
+
     def group(self) -> dict:
         """
         Returns a dictionary containing the results of grouping structures from a list of df row objects based on the geometry of the row's ase atoms object.

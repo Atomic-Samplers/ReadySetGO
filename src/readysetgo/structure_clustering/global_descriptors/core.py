@@ -43,4 +43,10 @@ class GlobalDescriptor(ABC):
         For non-orthogonal cells, this may not represent the true maximum possible distance.
         """
         raise NotImplementedError("This method should be overridden by subclasses")
-        
+
+    @abstractmethod
+    def scale_global_descriptor_length(self):
+        """
+        Scales the global descriptor length to a standard size
+        """
+        raise NotImplementedError("This method should be overridden by subclasses")

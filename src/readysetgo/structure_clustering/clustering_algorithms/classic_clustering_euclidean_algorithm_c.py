@@ -1,19 +1,23 @@
 import numpy as np
 from numba import njit
-from .core import ClusteringAlgorithm
+from readysetgo.structure_clustering.clustering_algorithms.classic_clustering_algorithm import ClassicClusteringAlgorithm
+from time import time
+from matplotlib import pyplot as plt
 
 @njit
-def compute_distance_matrix(global_descriptor_array):
+def compute_distance_matrix(global_descriptor_array, old_dist_mat, new_structures):
     n = global_descriptor_array.shape[0]
-    dist_mat = np.zeros((n, n))
-    gd_length = global_descriptor_array.shape[1]
-    for i in range(n):
+    new_dist_mat = np.zeros((n, n))
+    norm_factor = np.sqrt(global_descriptor_array.shape[1])
+
+    new_dist_mat[:len(old_dist_mat), :len(old_dist_mat)] = old_dist_mat  
+    for i in range(n-new_structures, n):
         for j in range(i):
             diff = global_descriptor_array[i] - global_descriptor_array[j]
-            dist = np.sqrt(np.sum(diff * diff)) / np.sqrt(gd_length)
-            dist_mat[i, j] = dist_mat[j, i] = dist
+            dist = np.sqrt(np.sum(diff * diff)) / norm_factor
+            new_dist_mat[i, j] = new_dist_mat[j, i] = dist
 
-    return dist_mat
+    return new_dist_mat
 
 @njit
 def fast_group(dist_mat, tolerance):
@@ -31,45 +35,36 @@ def fast_group(dist_mat, tolerance):
         remaining_indices = remaining_indices[~in_group]
     return group_keys, group_ids_list
 
-class ClassicClusteringEuclideanAlgorithmC(ClusteringAlgorithm):
-    def __init__(
-        self,
-        atoms_list: list = [],
-        tolerance: float = 0.01,
-        iterations: int = 1000,
-        base_atoms=None,
-        verbose: int = 0,
-        global_descriptor_object=None,
-        dist_mat: np.ndarray = np.array([]),
-        global_descriptor_array: np.ndarray = None,
-    ):
-        super().__init__(
-            tolerance=tolerance,
-            atoms_list=atoms_list,
-            global_descriptor_object=global_descriptor_object,
-            base_atoms=base_atoms,
-            iterations=iterations,
-            verbose=verbose,
-            global_descriptor_array=global_descriptor_array,
-        )
-        self.dist_mat = dist_mat
+class ClassicClusteringEuclideanAlgorithmC(ClassicClusteringAlgorithm):
+
     def __str__(self):
         return "ClassicClusteringEuclideanAlgorithmC"
 
     def global_descriptor_array_to_distance_matrix(self):
         """ Creates a distance matrix from the global descriptor array using numba """
-        if self.global_descriptor_array is None or len(self.global_descriptor_array) == 0:
-            self.global_descriptor_array = self.make_gd_array()
-        filled_gd_array = self.global_descriptor_array[np.any(self.global_descriptor_array != 0, axis=1)]
-        self.dist_mat = compute_distance_matrix(filled_gd_array)
+        self.update_gd_array()
+        new_structures= len(self.global_descriptor_array) - len(self.dist_mat)
+        if new_structures == 0:
+            return
+        elif new_structures < 0:
+            raise ValueError("Number of structures decreased, cannot update distance matrix.")
+        else:
+            self.set_attribute("dist_mat", compute_distance_matrix(self.global_descriptor_array, self.dist_mat, new_structures))
+        
+        
+    def get_distance_score(self, global_descriptor_length, entry_a, entry_b) -> float:
+        """Calculates the Euclidean distance score between two entries based on their global descriptors"""
+        diff = entry_a - entry_b
+        return np.sqrt(np.sum(diff * diff)) / np.sqrt(global_descriptor_length)
+
 
     def group(self) -> dict:
         """
         Returns a dictionary containing the results of grouping structures from a list of df row objects based on the geometry of the row's ase atoms object.
         Uses numba-accelerated grouping.
         """
-        if len(self.dist_mat) == 0:
-            self.global_descriptor_array_to_distance_matrix()
+        
+        self.global_descriptor_array_to_distance_matrix()
         file_num = len(self.atoms_list)
         group_dict = {}
 

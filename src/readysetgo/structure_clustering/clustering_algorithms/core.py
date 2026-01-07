@@ -88,18 +88,7 @@ class ClusteringAlgorithm(ABC):
             self.__class__.allowed_object_types,
         )
 
-    def make_gd_array(self):
-        assert len(self.atoms_list) > 0, "atoms_list is empty"
-        assert all("global_descriptor" in atoms.info for atoms in self.atoms_list), (
-            "All atoms must have a global_descriptor in the info dictionary"
-        )
 
-        a = np.zeros(
-            (len(self.atoms_list), len(self.atoms_list[0].info["global_descriptor"]))
-        )
-        for i, atoms in enumerate(self.atoms_list):
-            a[i] = atoms.info["global_descriptor"]
-        return a
 
     def get_new_global_descriptor(self, atoms):
         """return new global descriptor to the correct position in the global descriptor array"""

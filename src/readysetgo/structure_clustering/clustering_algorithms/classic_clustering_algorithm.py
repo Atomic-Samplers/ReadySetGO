@@ -13,7 +13,7 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
         verbose: int = 0,
         global_descriptor_object=None,
         dist_mat: np.ndarray = np.array([]),
-        global_descriptor_array: np.ndarray = None,
+        global_descriptor_array: np.ndarray = np.array([]),
     ):
         super().__init__(
             tolerance=tolerance,
@@ -22,9 +22,9 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
             base_atoms=base_atoms,
             iterations=iterations,
             verbose=verbose,
-            global_descriptor_array=global_descriptor_array,
         )
         self.dist_mat = dist_mat
+        self.global_descriptor_array = global_descriptor_array
         
     def __str__(self) -> str:
         return "ClassicClusteringAlgorithm"
@@ -34,10 +34,39 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
         return np.sum(np.abs(entry_a - entry_b)) / global_descriptor_length
 
 
+    def update_gd_array(self):
+        assert len(self.atoms_list) > 0, "atoms_list is empty"
+        assert all("global_descriptor" in atoms.info for atoms in self.atoms_list), (
+            "All atoms must have a global_descriptor in the info dictionary"
+        )
+        if len(self.global_descriptor_array) == 0:
+            a = np.zeros(
+                (len(self.atoms_list), len(self.atoms_list[0].info["global_descriptor"]))
+            )
+            for i, atoms in enumerate(self.atoms_list):
+                a[i] = atoms.info["global_descriptor"]
+
+        elif len(self.atoms_list) > self.global_descriptor_array.shape[0]:
+            a = np.zeros(
+                (len(self.atoms_list), self.global_descriptor_array.shape[1])
+            )
+            a[: len(self.global_descriptor_array)] = self.global_descriptor_array
+            for i, atoms in enumerate(self.atoms_list[len(self.global_descriptor_array):]):
+                a[i+len(self.global_descriptor_array)] = atoms.info["global_descriptor"]
+
+        elif len(self.atoms_list) == self.global_descriptor_array.shape[0]:
+            a = self.global_descriptor_array
+        else:
+            raise ValueError("atoms_list is smaller than global_descriptor_array")
+        
+        self.set_attribute("global_descriptor_array", a)
+        
+
+
     def global_descriptor_array_to_distance_matrix(self):
         """ Creates a distance matrix from the global descriptor array"""
-        if self.global_descriptor_array is None or len(self.global_descriptor_array) == 0:
-            self.global_descriptor_array = self.make_gd_array()
+        if len(self.global_descriptor_array) == 0:
+            self.update_gd_array()
 
         filled_global_descriptor_array_length=len(self.global_descriptor_array[np.any(self.global_descriptor_array!=0, axis=1)])
         self.dist_mat= np.zeros((filled_global_descriptor_array_length, filled_global_descriptor_array_length))
