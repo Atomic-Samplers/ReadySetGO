@@ -1,6 +1,9 @@
 import numpy as np
 from numba import njit
 from readysetgo.structure_clustering.clustering_algorithms.classic_clustering_algorithm import ClassicClusteringAlgorithm
+from readysetgo.structure_clustering.global_descriptors.utils.format_atoms_list import (
+    assign_id_and_global_descriptor_to_atoms_list,
+)
 from time import time
 from matplotlib import pyplot as plt
 
@@ -57,13 +60,27 @@ class ClassicClusteringEuclideanAlgorithmC(ClassicClusteringAlgorithm):
         diff = entry_a - entry_b
         return np.sqrt(np.sum(diff * diff)) / np.sqrt(global_descriptor_length)
 
-
-    def group(self) -> dict:
+    def group(self, return_group_dict: bool =True) -> tuple[np.ndarray, int] | dict:
         """
-        Returns a dictionary containing the results of grouping structures from a list of df row objects based on the geometry of the row's ase atoms object.
+        Groups structures based on the distance matrix and the specified tolerance. Returns a group dictionary where the keys are the group ids and the values are lists of structure ids in each group, as well as the number of unique structures found. Or returns the number of unique structures found and the distance matrix if return_group_dict is False.
         Uses numba-accelerated grouping.
         """
-        
+        if not np.all(
+            ["global_descriptor" in x.info for x in self.atoms_list]
+        ) or not np.all(["id" in x.info for x in self.atoms_list]):
+            if not hasattr(self, "global_descriptor_object"):
+                raise ValueError(
+                    "Global descriptors not found in atoms_list and no global_descriptor_object set."
+                )
+            else:
+                if self.global_descriptor_object is None:
+                    raise ValueError(
+                        "Global descriptors not found in atoms_list and global_descriptor_object is set to None."
+                    )
+                else:
+                    self.atoms_list = assign_id_and_global_descriptor_to_atoms_list(
+                        self.global_descriptor_object, self.atoms_list
+                    )
         self.global_descriptor_array_to_distance_matrix()
         file_num = len(self.atoms_list)
         group_dict = {}
@@ -85,4 +102,7 @@ class ClassicClusteringEuclideanAlgorithmC(ClassicClusteringAlgorithm):
                     f"All structures grouped, Groups found: {len(group_dict)}, Largest Group: {largest_group} "
                 )
 
-        return group_dict
+        if return_group_dict:
+            return group_dict
+        else:            
+            return self.dist_mat, len(group_dict)

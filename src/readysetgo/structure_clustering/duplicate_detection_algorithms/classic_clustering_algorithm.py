@@ -111,21 +111,9 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
         return self.dist_mat
     
 
-    def group(self) -> dict:
+    def group(self, return_group_dict: bool =True) -> tuple[np.ndarray, int] | dict:
         """
-        Returns a dictionary containing the results of grouping structures from a list of df row objects based on the geometry of the row's ase atoms object.
-
-        structure_row_list : list
-        list of row objects produced from an ase db object. Required instead of db object as some preprocessing is often required to get the same inputs for different calculators
-
-        dist_mat : numpy.ndarray
-        a numpy array containing the pairwise distances between all structures in the structure_row_list.
-
-        tolerance : float
-        the tolerance limit that the computed distance score for each group will need to be under in order to be grouped
-
-        verbose : int
-        the level to which the script will talk to you
+        Groups structures based on the distance matrix and the specified tolerance. Returns a group dictionary where the keys are the group ids and the values are lists of structure ids in each group, as well as the number of unique structures found. Or returns the number of unique structures found and the distance matrix if return_group_dict is False.
         """
         
         if len(self.dist_mat) == 0:
@@ -164,5 +152,8 @@ class ClassicClusteringAlgorithm(ClusteringAlgorithm):
                     f"All structures grouped, Groups found: {len(group_dict)}, Largest Group: {largest_group} "
                 )
 
-        return group_dict
+        if return_group_dict:
+            return group_dict
+        else:            
+            return self.dist_mat, len(group_dict)
     

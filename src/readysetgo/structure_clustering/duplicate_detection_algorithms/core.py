@@ -1,6 +1,7 @@
 import glob
 import numpy as np
 from readysetgo.utils.common_functions import set_validated_attribute
+from readysetgo.structure_clustering.global_descriptors.core import GlobalDescriptor
 from abc import ABC, abstractmethod
 
 
@@ -9,7 +10,7 @@ class ClusteringAlgorithm(ABC):
         self,
         tolerance: float,
         atoms_list: list = [],
-        global_descriptor_object=None,
+        global_descriptor_object: GlobalDescriptor | None = None,
         global_descriptor_array: np.ndarray = None,
         base_atoms=None,
         iterations: int = 1000,
@@ -69,6 +70,10 @@ class ClusteringAlgorithm(ABC):
         "iterations": int,
         "dist_mat": np.ndarray,
         "global_descriptor_array": np.ndarray,
+        "hash_array": np.ndarray,
+        "normalizations": int,
+        "acceptance_rate": float,
+        "spread": float,
     }
     allowed_object_types = {
         "global_descriptor_object": [
@@ -100,5 +105,17 @@ class ClusteringAlgorithm(ABC):
         pass
 
     @abstractmethod
-    def group(self):
+    def duplicate_check(self, atoms) -> bool:
         raise NotImplementedError("Subclasses should implement this method")
+
+    @abstractmethod
+    def get_distances(self, atoms) -> np.ndarray:
+        raise NotImplementedError("Subclasses should implement this method")
+    
+    # @abstractmethod
+    # def add_to_database(self, atoms):
+    #     raise NotImplementedError("Subclasses should implement this method")
+    
+    # @abstractmethod
+    # def group(self, return_group_dict: bool = False) -> tuple[np.ndarray, int] | dict:
+    #     raise NotImplementedError("Subclasses should implement this method")

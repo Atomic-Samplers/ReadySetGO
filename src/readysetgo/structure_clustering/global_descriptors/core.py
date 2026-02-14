@@ -6,10 +6,11 @@ import numpy as np
 class GlobalDescriptor(ABC):
     """Descriptor Matrix for structures."""
 
-    def __init__(self, structure=None, verbose=0, descriptor_name=None):
+    def __init__(self, structure=None, verbose=0, descriptor_name=None, dimensions=128):
         self.structure = structure
         self.verbose = verbose
         self.descriptor_name = descriptor_name
+        self.dimensions = dimensions
         # self.invert = None
 
     def print_out(self):
@@ -19,7 +20,7 @@ class GlobalDescriptor(ABC):
         print(f"Using {self.descriptor_name} as Descriptor")
 
     # set a global, extensible dictionary for subcalasses to access
-    allowed_value_types ={'verbose': int, 'descriptor_name': str}
+    allowed_value_types ={'verbose': int, 'descriptor_name': str, 'dimensions': int}
     allowed_object_types = {'structure': ['ase', 'Atoms']}
 
     def set_attribute(self, name, value):
