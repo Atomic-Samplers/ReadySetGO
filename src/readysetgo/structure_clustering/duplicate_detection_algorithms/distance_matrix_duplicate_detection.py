@@ -88,7 +88,7 @@ class DistanceMatrixDuplicateDetection(DuplicateDetectionAlgorithm):
             return not np.any(self.dist_mat[-1][:-1] < self.tolerance)
 
     def get_distances_array(self) -> np.ndarray:
-        self.global_descriptor_array_to_distance_matrix()
+        
         
         return self.dist_mat
         

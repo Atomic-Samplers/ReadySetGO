@@ -1,12 +1,12 @@
 import numpy as np
 from ase import Atoms
 
-from readysetgo.structure_clustering.clustering_algorithms.classic_clustering_algorithm import ClassicClusteringAlgorithm
-from readysetgo.structure_clustering.clustering_algorithms.hashing_clustering_algorithm import HashingClusteringAlgorithm
-from readysetgo.structure_clustering.clustering_algorithms.core import ClusteringAlgorithm
+from readysetgo.structure_clustering.duplicate_detection_algorithms.distance_matrix_duplicate_detection import DistanceMatrixDuplicateDetection
+from readysetgo.structure_clustering.duplicate_detection_algorithms.hashing_duplicate_detection import HashingDuplicateDetection
+from readysetgo.structure_clustering.duplicate_detection_algorithms.core import DuplicateDetectionAlgorithm
 
 def tune_tolerance_value(
-    cluster_object: ClusteringAlgorithm,
+    duplicate_detection_object: DuplicateDetectionAlgorithm,
     tuning_atoms_list: list[Atoms],
     target_structures: int | None = None,    
     bin_search_steps: int = 20,
@@ -19,18 +19,18 @@ def tune_tolerance_value(
     Otherwise, tune the clustering tolerances for each clustering algorithm
     in the cluster_object_dict and return a dictionary of clustering tolerances.
     Args:
-        cluster_object (ClusteringAlgorithm): The clustering algorithm object to use for tuning.
+        duplicate_detection_object (DuplicateDetectionAlgorithm): The duplicate detection algorithm object to use for tuning.
         tuning_atoms_list (list[Atoms]): A list of Atoms objects
-            to be used for tuning the clustering tolerances.
+            to be used for tuning the duplicate detection tolerances.
         bin_search_steps (int): The number of steps to use in the binary search
-            for tuning the clustering tolerances.
+            for tuning the duplicate detection tolerances.
         target_structures (int): The target number of unique structures to aim for
             during tuning. 
         target_upper (bool): Find the upper threshold that gives target_structures, if 
             false find the lower threshold.
         verbose (int): Verbosity level. If greater than 0, progress will be printed
     Returns:
-        float: The tuned clustering tolerance value.
+        float: The tuned duplicate detection tolerance value.
     """
     assert len(tuning_atoms_list) > 0, "tuning_atoms_list must not be empty."
     if target_structures is not None:
@@ -45,7 +45,7 @@ def tune_tolerance_value(
     
     clustering_tolerance = target_structure_binary_search(
         steps=bin_search_steps,
-        cluster_object=cluster_object,
+        duplicate_detection_object=duplicate_detection_object,
         atoms_list=tuning_atoms_list,
         target_structures=target_structures,
         verbose=verbose,
@@ -56,7 +56,7 @@ def tune_tolerance_value(
 
 
 def target_structure_binary_search(
-    cluster_object: ClusteringAlgorithm,
+    duplicate_detection_object: DuplicateDetectionAlgorithm,
     atoms_list: list[Atoms],
     steps: int = 20,
     target_structures: int = 100,
@@ -69,19 +69,18 @@ def target_structure_binary_search(
     Perform a binary search to find the optimal tolerance for the clustering algorithm
     that results in a number of unique structures close to the target number.
     """
-    cluster_object.set_attribute("atoms_list", atoms_list)
+    duplicate_detection_object.set_attribute("atoms_list", atoms_list)
     tolerance = start_max / 2
     best_min = start_min
     best_max = start_max
     exact_list = []
     all_diff_dict = {}
     for _ in range(steps):
-        cluster_object.set_attribute("tolerance", tolerance)
-        if isinstance(cluster_object, HashingClusteringAlgorithm):
-            unique_structures = cluster_object.group()[1]
-        elif isinstance(cluster_object, ClassicClusteringAlgorithm):
-            unique_structures = len(cluster_object.group())
-
+        duplicate_detection_object.set_attribute("tolerance", tolerance)
+        if isinstance(duplicate_detection_object, HashingDuplicateDetection):
+            unique_structures = duplicate_detection_object.group()[1]
+        elif isinstance(duplicate_detection_object, DistanceMatrixDuplicateDetection):
+            unique_structures = len(duplicate_detection_object.group())
         all_diff_dict[tolerance] = np.abs(unique_structures - target_structures)
         # more tolerance means less unique structures
         if (

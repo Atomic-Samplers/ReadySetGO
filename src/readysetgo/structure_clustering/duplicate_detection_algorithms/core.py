@@ -31,7 +31,7 @@ class DuplicateDetectionAlgorithm(ABC):
         "iterations": int,
         "dist_mat": np.ndarray,
         "global_descriptor_array": np.ndarray,
-        "hash_array": np.ndarray,
+        "membership_array": np.ndarray,
         "perturbations": int,
         "acceptance_rate": float,
         "spread": float,
@@ -89,7 +89,7 @@ class DuplicateDetectionAlgorithm(ABC):
         raise NotImplementedError("Subclasses should implement this method")
 
     @abstractmethod
-    def add_to_dataset(self, check_results: np.ndarray) -> None:
+    def add_to_global_descriptor_array(self) -> None:
         raise NotImplementedError("Subclasses should implement this method")
     
     @abstractmethod
