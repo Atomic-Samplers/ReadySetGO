@@ -43,7 +43,7 @@ def tune_tolerance_value(
     if target_structures is None:
         target_structures = len(tuning_atoms_list)
     
-    clustering_tolerance = target_structure_binary_search(
+    duplicate_tolerance = target_structure_binary_search(
         steps=bin_search_steps,
         duplicate_detection_object=duplicate_detection_object,
         atoms_list=tuning_atoms_list,
@@ -52,7 +52,7 @@ def tune_tolerance_value(
         target_upper=target_upper,
     )
     
-    return clustering_tolerance
+    return duplicate_tolerance
 
 
 def target_structure_binary_search(
@@ -75,12 +75,17 @@ def target_structure_binary_search(
     best_max = start_max
     exact_list = []
     all_diff_dict = {}
+    
     for _ in range(steps):
+        duplicate_detection_object.reset_duplicate_detection(reset_indexing=False) 
         duplicate_detection_object.set_attribute("tolerance", tolerance)
-        if isinstance(duplicate_detection_object, HashingDuplicateDetection):
-            unique_structures = duplicate_detection_object.group()[1]
-        elif isinstance(duplicate_detection_object, DistanceMatrixDuplicateDetection):
-            unique_structures = len(duplicate_detection_object.group())
+        duplicate_detection_object.preinitialise_global_descriptor_array(size=len(atoms_list))
+        unique_structures = 0
+        for atoms in atoms_list: 
+            input_descriptor = duplicate_detection_object.get_input_global_descriptor(atoms)
+            unique_structures+=duplicate_detection_object.duplicate_check(atoms, input_global_descriptor=input_descriptor)
+            duplicate_detection_object.add_to_global_descriptor_array(atoms, input_global_descriptor=input_descriptor)
+        
         all_diff_dict[tolerance] = np.abs(unique_structures - target_structures)
         # more tolerance means less unique structures
         if (

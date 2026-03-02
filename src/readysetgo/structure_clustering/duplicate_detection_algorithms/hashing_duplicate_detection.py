@@ -1,11 +1,6 @@
-import dis
-import glob
 import numpy as np
 from readysetgo.structure_clustering.duplicate_detection_algorithms.core import (
     DuplicateDetectionAlgorithm,
-)
-from readysetgo.structure_clustering.global_descriptors.utils.format_atoms_list import (
-    assign_id_and_global_descriptor_to_atoms_list,
 )
 from numba import jit
 from ase import Atoms
@@ -29,7 +24,18 @@ def perturb_and_round_descriptor(
         perturbed_rounded[i] = np.round(perturbed / tolerance) * tolerance
 
     return perturbed_rounded
-
+@jit(nopython=True)
+def get_fast_distances_array(hash_array: np.ndarray, perturbations: int, dist_mat: np.ndarray) -> np.ndarray:
+        
+    for i in range(hash_array.shape[1]):
+        for j in range(hash_array.shape[1]):
+            match_count=0
+            for k in range(hash_array.shape[0]):
+                if hash_array[k,i] == hash_array[k,j]:
+                    match_count+=1
+            dist_mat[i,j]=match_count
+    
+    return dist_mat / perturbations
 
 class HashingDuplicateDetection(DuplicateDetectionAlgorithm):
     """
@@ -117,6 +123,9 @@ class HashingDuplicateDetection(DuplicateDetectionAlgorithm):
 
         return perturbed_rounded_hashed_global_descriptor  # , perturbed_rounded_global_descriptor
 
+    def get_input_global_descriptor(self, atoms: Atoms) -> np.ndarray:
+        return self.get_perturbed_rounded_hashed_global_descriptor(atoms)
+        
     # def add_new_atoms_for_grouping(
     #     self,
     #     perturbed_rounded_hashed_global_descriptor_array: np.ndarray[Any],
@@ -203,12 +212,12 @@ class HashingDuplicateDetection(DuplicateDetectionAlgorithm):
 
     def check_new_descriptor(
         self,
-        perturbed_rounded_hashed_global_descriptor: np.ndarray,
+        input_global_descriptor: np.ndarray,
     ) -> bool:
         """Checks if a given atoms object is unique compared to a given array of hashes and provides the hash values
 
         Args:
-            perturbed_rounded_hashed_global_descriptor_array (np.ndarray): the array of pre-existing hash vectors
+            input_global_descriptor (np.ndarray): the input global descriptor to check against the existing global descriptor array
             perturbed_rounded_hashed_global_descriptor (np.ndarray): the hash vector to check against
 
         Returns:
@@ -220,16 +229,16 @@ class HashingDuplicateDetection(DuplicateDetectionAlgorithm):
 
         if not initial_add:
             clash_vector = np.zeros(
-                len(perturbed_rounded_hashed_global_descriptor), dtype=bool
+                len(input_global_descriptor), dtype=bool
             )
             for hash_index, hash_value in enumerate(
-                perturbed_rounded_hashed_global_descriptor
+                input_global_descriptor
             ):
                 if hash_value in self.global_descriptor_array[hash_index]:
                     clash_vector[hash_index] = True
 
             uniqueness_vote_array = 1 - (
-                np.sum(clash_vector) / len(perturbed_rounded_hashed_global_descriptor)
+                np.sum(clash_vector) / len(input_global_descriptor)
             )  # 1 means completely unique, 0 means completely not unique
 
             unique_structure = uniqueness_vote_array >= self.acceptance_rate
@@ -242,7 +251,7 @@ class HashingDuplicateDetection(DuplicateDetectionAlgorithm):
     def update_global_descriptor_and_clash_arrays(
         self,
         atoms: Atoms,
-        perturbed_rounded_hashed_global_descriptor: np.ndarray,
+        input_global_descriptor: np.ndarray,
     ) -> None:
 
         new_membership_array = np.zeros(
@@ -262,7 +271,7 @@ class HashingDuplicateDetection(DuplicateDetectionAlgorithm):
         hash_array = self.global_descriptor_array.copy()
 
         for hash_index, hash_value in enumerate(
-            perturbed_rounded_hashed_global_descriptor
+            input_global_descriptor
         ):
             if (
                 hash_value in hash_array[hash_index]
@@ -275,7 +284,7 @@ class HashingDuplicateDetection(DuplicateDetectionAlgorithm):
                 new_membership_array[hash_index, atoms.info["clustering_id"] - 1] = (
                     atoms.info["clustering_id"]
                 )
-                hash_array[hash_index, atoms.info["clustering_id"] - 1] = hash_value
+            hash_array[hash_index, atoms.info["clustering_id"] - 1] = hash_value
 
         self.set_attribute("membership_array", new_membership_array)
         self.set_attribute("global_descriptor_array", hash_array)
@@ -283,29 +292,32 @@ class HashingDuplicateDetection(DuplicateDetectionAlgorithm):
     def add_to_global_descriptor_array(
         self,
         atoms: Atoms,
-        perturbed_rounded_hashed_global_descriptor: np.ndarray | None = None,
+        input_global_descriptor: np.ndarray | None = None,
     ) -> None:
         """Updates the global descriptor array and clash array with a given atoms object and its associated hash vector. Ensures the global descriptor array and clash array are pre-initialized to the correct size before updating.
 
         Args:
             atoms (Atoms): An ASE atoms object with a global descriptor key in the info dictionary
-            perturbed_rounded_hashed_global_descriptor (np.ndarray | None, optional): the hash vector associated with the Atoms object's global descripotr . Defaults to None. If none one is assigned using the get_perturbed_rounded_hashed_global_descriptor method
+            input_global_descriptor (np.ndarray | None, optional): the hash vector associated with the Atoms object's global descripotr . Defaults to None. If none one is assigned using the get_input_global_descriptor method
         """
-        if perturbed_rounded_hashed_global_descriptor is None:
-            perturbed_rounded_hashed_global_descriptor = (
-                self.get_perturbed_rounded_hashed_global_descriptor(atoms)
-            )
+        if input_global_descriptor is None:
+            input_global_descriptor = self.get_input_global_descriptor(atoms)
 
         if (
             not hasattr(self, "global_descriptor_array")
-            or self.global_descriptor_array.shape[1] < atoms.info["clustering_id"]
-        ):
+            or len(self.global_descriptor_array.shape) < 2
+        ): # if the global descriptor array has not been initialized or is not the correct shape, pre-initialize it to the correct size
             self.preinitialise_global_descriptor_array(
                 size=atoms.info["clustering_id"] * 2
             )
 
+        if len(self.global_descriptor_array[0,:]) < atoms.info["clustering_id"]: # if the global descriptor array is not large enough to accommodate the new atoms object, pre-initialize it to a larger size
+            self.preinitialise_global_descriptor_array(
+                size=len(self.global_descriptor_array[0,:]) * 2
+            )
+
         self.update_global_descriptor_and_clash_arrays(
-            atoms, perturbed_rounded_hashed_global_descriptor
+            atoms, input_global_descriptor
         )
 
     # def add_all_hashes_to_hashing_array(
@@ -329,7 +341,6 @@ class HashingDuplicateDetection(DuplicateDetectionAlgorithm):
         """
         hash_array = np.zeros((self.perturbations, size), dtype=int)
         if hasattr(self, "global_descriptor_array"):
-            print(self.global_descriptor_array.shape)
             if len(self.global_descriptor_array.shape) > 1:
                 hash_array[:, : self.global_descriptor_array.shape[1]] = (
                     self.global_descriptor_array
@@ -339,30 +350,21 @@ class HashingDuplicateDetection(DuplicateDetectionAlgorithm):
 
     # def detect_clashes_new_structure(structure, nto_hash_dict):
 
-    def duplicate_check(self, atoms) -> bool:
-        perturbed_rounded_hashed_global_descriptor = (
-            self.get_perturbed_rounded_hashed_global_descriptor(atoms)
-        )
+    def duplicate_check( self,
+        atoms: Atoms,
+        input_global_descriptor: np.ndarray | None = None,) -> bool:
+        if input_global_descriptor is None:
+            input_global_descriptor = self.get_input_global_descriptor(atoms)
 
         unique_structure = self.check_new_descriptor(
-            perturbed_rounded_hashed_global_descriptor
+            input_global_descriptor
         )
         return unique_structure
 
     def get_distances_array(self) -> np.ndarray:
-
+        
         dist_mat=np.zeros((len(self.atoms_list), len(self.atoms_list)))
-        hash_array = self.global_descriptor_array.copy()
-        for i in range(hash_array.shape[1]):
-            for j in range(hash_array.shape[1]):
-                match_count=0
-                for k in range(hash_array.shape[0]):
-                    if hash_array[k,i] == hash_array[k,j]:
-                        match_count+=1
-                dist_mat[i,j]=match_count
-        
-        
-        return dist_mat / self.perturbations
+        return get_fast_distances_array(self.global_descriptor_array, self.perturbations, dist_mat)
 
     # def convert_hash_array_to_group_dict(self, membership_array: np.ndarray) -> dict:
     #     # print(membership_array)
