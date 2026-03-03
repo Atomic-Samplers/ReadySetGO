@@ -80,7 +80,27 @@ class DuplicateDetectionAlgorithm(ABC):
             ]
         self.set_attribute("global_descriptor_array", tmp_global_descriptor_array)
 
+    def detect_duplicates_in_atoms_list(self, reset_indexing: bool = False) -> int:
+        """Performs duplicate detection on the atoms_list and fills the global_descriptor_array and distance matrix with the results. Returns the number of unique structures found in the atoms_list. If reset_indexing is True, resets the indexing of the atoms_list and regenerates global descriptors for the atoms_list to ensure consistency. This is useful when starting a new clustering process or when the input data has changed significantly.
 
+        Args:
+            reset_indexing (bool, optional): whether to reset the indexing of the atoms_list and regenerate global descriptors. Defaults to False.
+
+        Returns:
+            int: number of unique structures found in the atoms_list
+        """
+        self.reset_duplicate_detection(reset_indexing=reset_indexing)
+        self.preinitialise_global_descriptor_array(size=len(self.atoms_list))
+        unique_structures=0
+        for atoms in self.atoms_list:
+            
+            input_descriptor=self.get_input_global_descriptor(atoms)
+            unique_structures+=self.duplicate_check(atoms, input_descriptor)
+            self.add_to_global_descriptor_array(atoms, input_descriptor)
+        
+        
+        return unique_structures
+    
     def reset_duplicate_detection(self, reset_indexing: bool = False) -> None:
         """
         Resets the duplicate detection algorithm by clearing the global descriptor array, distance matrix, and membership array.
